@@ -46,7 +46,12 @@ CONTEXT_ANALYSIS_JSON = ORCH_DIR / "context_analysis.json"
 PLAN_JSON = ORCH_DIR / "plan.json"
 PLAN_VALIDATION_JSON = ORCH_DIR / "plan_validation.json"
 FINAL_SUMMARY_JSON = ORCH_DIR / "final_acceptance_summary.json"
+CHECKPOINTS_JSON = ORCH_DIR / "checkpoints.json"
 README_MD = ROOT / "README.md"
+WORKER_RESULTS_JSON = REPORTS_DIR / "worker_results.json"
+ARTIFACT_VALIDATION_JSON = REPORTS_DIR / "artifact_validation.json"
+BUILD_VALIDATION_JSON = REPORTS_DIR / "build_validation.json"
+RUNTIME_VALIDATION_JSON = REPORTS_DIR / "runtime_validation.json"
 
 PINK_BOLD = "\033[1;95m"
 RESET = "\033[0m"
@@ -85,6 +90,8 @@ REQUIRED_STAGE_NAMES = [
     "Runtime validation",
     "Final acceptance summary",
 ]
+STAGE_NAME_TO_INDEX = {name: idx for idx, name in enumerate(REQUIRED_STAGE_NAMES, start=1)}
+STAGE_SLUGS = {re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_"): idx for idx, name in enumerate(REQUIRED_STAGE_NAMES, start=1)}
 REQUIRED_ROLE_NAMES = [
     "Orchestrator",
     "Context Analyst",
@@ -176,7 +183,23 @@ def diff_snapshots(before: Dict[str, Dict[str, Any]], after: Dict[str, Dict[str,
 
 
 def matches_any_glob(rel_path: str, globs: Sequence[str]) -> bool:
-    return any(fnmatch.fnmatch(rel_path, pattern) for pattern in globs)
+    """Return True if rel_path matches glob or resides under a listed directory."""
+    for pattern in globs:
+        normalized = pattern.rstrip("/")
+        # Treat exact path matches literally before considering glob syntax.
+        if rel_path == pattern:
+            return True
+        if normalized and rel_path.startswith(f"{normalized}/"):
+            return True
+        if fnmatch.fnmatch(rel_path, pattern):
+            return True
+        # Treat plain paths (no wildcard metacharacters) as directory roots.
+        if not any(ch in pattern for ch in "*?"):
+            if not normalized:
+                continue
+            if rel_path == normalized:
+                return True
+    return False
 
 
 @dataclass(frozen=True)
@@ -237,6 +260,100 @@ def write_manifest(stage_index: int, stage_name: str, note: str, root: Path = RO
     path = MANIFESTS_DIR / f"{stage_index:02d}_{slugify(stage_name)}.json"
     write_text(path, json.dumps(payload, indent=2))
     return path
+
+
+def load_json_file(path: Path) -> Dict[str, Any]:
+    return load_json(read_text(path))
+
+
+def load_json_list_file(path: Path) -> List[Dict[str, Any]]:
+    data = json.loads(read_text(path))
+    if not isinstance(data, list):
+        raise RuntimeError(f"Expected JSON list in {path}")
+    return data
+
+
+def checkpoint_artifacts(stage_index: int) -> List[Path]:
+    mapping = {
+        1: [REPORTS_DIR / "environment_preflight.json"],
+        2: [CONTEXT_ANALYSIS_JSON],
+        3: [PLAN_JSON],
+        4: [PLAN_VALIDATION_JSON],
+        5: [PLAN_VALIDATION_JSON],
+        6: [WORKER_RESULTS_JSON],
+        7: [ARTIFACT_VALIDATION_JSON],
+        8: [BUILD_VALIDATION_JSON],
+        9: [RUNTIME_VALIDATION_JSON],
+        10: [FINAL_SUMMARY_JSON],
+    }
+    return mapping[stage_index]
+
+
+def load_checkpoints() -> Dict[str, Any]:
+    if not CHECKPOINTS_JSON.exists():
+        return {}
+    try:
+        data = json.loads(read_text(CHECKPOINTS_JSON))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Invalid checkpoint file: {exc}") from exc
+    if not isinstance(data, dict):
+        raise RuntimeError("Checkpoint file must be a JSON object")
+    return data
+
+
+def write_checkpoint(stage_index: int, stage_name: str, note: str, project_brief_path: Path) -> None:
+    checkpoints = load_checkpoints()
+    artifacts = checkpoint_artifacts(stage_index)
+    payload = {
+        "stage_index": stage_index,
+        "stage_name": stage_name,
+        "note": note,
+        "completed_at": utc_now(),
+        "project_brief_path": str(project_brief_path.relative_to(ROOT)),
+        "project_brief_sha256": sha256_file(project_brief_path),
+        "orchestrator_sha256": sha256_file(Path(__file__)),
+        "artifacts": [str(path.relative_to(ROOT)) for path in artifacts if path.exists()],
+    }
+    checkpoints[str(stage_index)] = payload
+    write_text(CHECKPOINTS_JSON, json.dumps(checkpoints, indent=2))
+
+
+def parse_resume_stage(value: Optional[str]) -> int:
+    if not value:
+        return 1
+    raw = value.strip()
+    if not raw:
+        return 1
+    if raw.isdigit():
+        index = int(raw)
+        if 1 <= index <= len(REQUIRED_STAGE_NAMES):
+            return index
+    if raw in REQUIRED_STAGE_NAMES:
+        return STAGE_NAME_TO_INDEX[raw]
+    normalized = re.sub(r"[^a-z0-9]+", "_", raw.lower()).strip("_")
+    if normalized in STAGE_SLUGS:
+        return STAGE_SLUGS[normalized]
+    raise RuntimeError(f"Unknown resume stage: {value}")
+
+
+def ensure_resume_prerequisites(resume_stage_index: int, project_brief_path: Path) -> None:
+    checkpoints = load_checkpoints()
+    current_brief_sha = sha256_file(project_brief_path)
+    for stage_index in range(1, resume_stage_index):
+        checkpoint = checkpoints.get(str(stage_index))
+        if not checkpoint:
+            raise RuntimeError(f"Cannot resume from stage {resume_stage_index}: missing checkpoint for stage {stage_index}")
+        if checkpoint.get("project_brief_sha256") != current_brief_sha:
+            raise RuntimeError(f"Cannot resume from stage {resume_stage_index}: project brief changed since stage {stage_index}")
+        for rel_path in checkpoint.get("artifacts", []):
+            artifact_path = ROOT / rel_path
+            if not artifact_path.exists():
+                raise RuntimeError(f"Cannot resume from stage {resume_stage_index}: missing artifact {rel_path} from stage {stage_index}")
+
+
+def load_worker_results_report() -> List[WorkerResult]:
+    payload = load_json_list_file(WORKER_RESULTS_JSON)
+    return [WorkerResult(**item) for item in payload]
 
 
 def slugify(value: str) -> str:
@@ -1103,6 +1220,15 @@ def build_dependency_owner_map(plan_payload: Dict[str, Any]) -> Dict[str, str]:
     return owners
 
 
+def normalize_dependency_name(dependency: str, roles: Sequence[str]) -> str:
+    for role in roles:
+        if dependency == role:
+            return role
+        if dependency.startswith(f"{role} "):
+            return role
+    return dependency
+
+
 def dependency_is_satisfied(dependency: str, completed_roles: set[str], dependency_owner_map: Dict[str, str]) -> bool:
     if dependency in completed_roles:
         return True
@@ -1119,7 +1245,14 @@ async def stage_worker_generation(project_brief: str, context_payload: Dict[str,
         write_text(task_path, json.dumps(task, indent=2))
 
     semaphore = asyncio.Semaphore(max_concurrency)
-    pending = {task["role"]: task for task in plan_payload["worker_tasks"]}
+    roles = plan_payload.get("roles", [])
+    pending = {}
+    for task in plan_payload["worker_tasks"]:
+        normalized_task = dict(task)
+        normalized_task["dependencies"] = [
+            normalize_dependency_name(dep, roles) for dep in task.get("dependencies", [])
+        ]
+        pending[task["role"]] = normalized_task
     completed_roles = {"Architect"}
     dependency_owner_map = build_dependency_owner_map(plan_payload)
     results: List[WorkerResult] = []
@@ -1300,6 +1433,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-concurrency", type=int, default=2, help="Maximum concurrent editing workers")
     parser.add_argument("--dry-run-preflight", action="store_true", help="Run only environment preflight and exit")
     parser.add_argument("--bootstrap-plan", action="store_true", help="Use the local bootstrap plan instead of invoking Codex for planning")
+    parser.add_argument("--resume-from-stage", default="", help="Resume from a stage index, exact stage name, or stage slug")
     return parser.parse_args()
 
 
@@ -1312,52 +1446,106 @@ async def main() -> None:
         project_brief_path = ROOT / project_brief_path
     project_brief = load_project_brief(project_brief_path)
     write_runtime_config(project_brief_path, args.max_concurrency)
+    resume_stage_index = parse_resume_stage(args.resume_from_stage)
+    if resume_stage_index > 1:
+        ensure_resume_prerequisites(resume_stage_index, project_brief_path)
+        log_step(f"Resuming from Stage {resume_stage_index}/10: {REQUIRED_STAGE_NAMES[resume_stage_index - 1]}")
 
-    preflight_report = await stage_environment_preflight(project_brief)
-    write_manifest(1, REQUIRED_STAGE_NAMES[0], "Environment preflight complete")
+    preflight_report: Dict[str, Any]
+    context_payload: Dict[str, Any]
+    plan_payload: Dict[str, Any]
+    worker_results: List[WorkerResult]
+
+    if resume_stage_index <= 1:
+        preflight_report = await stage_environment_preflight(project_brief)
+        write_manifest(1, REQUIRED_STAGE_NAMES[0], "Environment preflight complete")
+        write_checkpoint(1, REQUIRED_STAGE_NAMES[0], "Environment preflight complete", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 1/10: Environment preflight")
+        preflight_report = load_json_file(REPORTS_DIR / "environment_preflight.json")
     if args.dry_run_preflight:
         log_step("Dry-run preflight completed")
         return
 
-    context_payload = await stage_context_analysis(project_brief)
-    write_manifest(2, REQUIRED_STAGE_NAMES[1], "Context analysis complete")
-
-    if args.bootstrap_plan:
-        log_step("Stage 3/10: Planner generation (bootstrap plan)")
-        plan_payload = default_bootstrap_plan()
-        write_text(PLAN_JSON, json.dumps(plan_payload, indent=2))
+    if resume_stage_index <= 2:
+        context_payload = await stage_context_analysis(project_brief)
+        write_manifest(2, REQUIRED_STAGE_NAMES[1], "Context analysis complete")
+        write_checkpoint(2, REQUIRED_STAGE_NAMES[1], "Context analysis complete", project_brief_path)
     else:
-        plan_payload = await stage_planner_generation(project_brief, context_payload)
-    write_manifest(3, REQUIRED_STAGE_NAMES[2], "Planner generation complete")
+        log_step("Resume skip: Stage 2/10: Context analysis")
+        context_payload = load_json_file(CONTEXT_ANALYSIS_JSON)
 
-    if args.bootstrap_plan:
-        log_step("Stage 4/10: Planner schema validation")
-        validate_plan(plan_payload)
-        write_text(PLAN_VALIDATION_JSON, json.dumps({"status": "valid", "details": {"bootstrap": True}}, indent=2))
+    if resume_stage_index <= 3:
+        if args.bootstrap_plan:
+            log_step("Stage 3/10: Planner generation (bootstrap plan)")
+            plan_payload = default_bootstrap_plan()
+            write_text(PLAN_JSON, json.dumps(plan_payload, indent=2))
+        else:
+            plan_payload = await stage_planner_generation(project_brief, context_payload)
+        write_manifest(3, REQUIRED_STAGE_NAMES[2], "Planner generation complete")
+        write_checkpoint(3, REQUIRED_STAGE_NAMES[2], "Planner generation complete", project_brief_path)
     else:
-        plan_payload = await stage_plan_validation(project_brief, context_payload, plan_payload)
-    write_manifest(4, REQUIRED_STAGE_NAMES[3], "Planner validation complete")
-    write_manifest(5, REQUIRED_STAGE_NAMES[4], "Planner repair stage accounted for")
+        log_step("Resume skip: Stage 3/10: Planner generation")
+        plan_payload = load_json_file(PLAN_JSON)
 
-    worker_results = await stage_worker_generation(project_brief, context_payload, plan_payload, args.max_concurrency)
-    write_manifest(6, REQUIRED_STAGE_NAMES[5], "Worker generation complete")
+    if resume_stage_index <= 4:
+        if args.bootstrap_plan:
+            log_step("Stage 4/10: Planner schema validation")
+            validate_plan(plan_payload)
+            write_text(PLAN_VALIDATION_JSON, json.dumps({"status": "valid", "details": {"bootstrap": True}}, indent=2))
+        else:
+            plan_payload = await stage_plan_validation(project_brief, context_payload, plan_payload)
+        write_manifest(4, REQUIRED_STAGE_NAMES[3], "Planner validation complete")
+        write_checkpoint(4, REQUIRED_STAGE_NAMES[3], "Planner validation complete", project_brief_path)
+        write_manifest(5, REQUIRED_STAGE_NAMES[4], "Planner repair stage accounted for")
+        write_checkpoint(5, REQUIRED_STAGE_NAMES[4], "Planner repair stage accounted for", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 4/10: Planner schema validation")
+        log_step("Resume skip: Stage 5/10: Planner repair loop if needed")
+        plan_payload = load_json_file(PLAN_JSON)
 
-    await stage_artifact_validation(project_brief, context_payload, plan_payload)
-    write_manifest(7, REQUIRED_STAGE_NAMES[6], "Artifact validation complete")
+    if resume_stage_index <= 6:
+        worker_results = await stage_worker_generation(project_brief, context_payload, plan_payload, args.max_concurrency)
+        write_manifest(6, REQUIRED_STAGE_NAMES[5], "Worker generation complete")
+        write_checkpoint(6, REQUIRED_STAGE_NAMES[5], "Worker generation complete", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 6/10: Worker generation")
+        worker_results = load_worker_results_report()
 
-    await stage_build_validation(plan_payload)
-    write_manifest(8, REQUIRED_STAGE_NAMES[7], "Build validation complete")
+    if resume_stage_index <= 7:
+        await stage_artifact_validation(project_brief, context_payload, plan_payload)
+        write_manifest(7, REQUIRED_STAGE_NAMES[6], "Artifact validation complete")
+        write_checkpoint(7, REQUIRED_STAGE_NAMES[6], "Artifact validation complete", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 7/10: Artifact validation")
+        load_json_file(ARTIFACT_VALIDATION_JSON)
 
-    await stage_runtime_validation(plan_payload)
-    write_manifest(9, REQUIRED_STAGE_NAMES[8], "Runtime validation complete")
+    if resume_stage_index <= 8:
+        await stage_build_validation(plan_payload)
+        write_manifest(8, REQUIRED_STAGE_NAMES[7], "Build validation complete")
+        write_checkpoint(8, REQUIRED_STAGE_NAMES[7], "Build validation complete", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 8/10: Build validation")
+        load_json_file(BUILD_VALIDATION_JSON)
 
-    await stage_final_acceptance_summary(project_brief_path, context_payload, plan_payload, worker_results)
-    write_manifest(10, REQUIRED_STAGE_NAMES[9], "Final acceptance summary complete")
+    if resume_stage_index <= 9:
+        await stage_runtime_validation(plan_payload)
+        write_manifest(9, REQUIRED_STAGE_NAMES[8], "Runtime validation complete")
+        write_checkpoint(9, REQUIRED_STAGE_NAMES[8], "Runtime validation complete", project_brief_path)
+    else:
+        log_step("Resume skip: Stage 9/10: Runtime validation")
+        load_json_file(RUNTIME_VALIDATION_JSON)
+
+    if resume_stage_index <= 10:
+        await stage_final_acceptance_summary(project_brief_path, context_payload, plan_payload, worker_results)
+        write_manifest(10, REQUIRED_STAGE_NAMES[9], "Final acceptance summary complete")
+        write_checkpoint(10, REQUIRED_STAGE_NAMES[9], "Final acceptance summary complete", project_brief_path)
 
     append_jsonl(DECISION_LOG, {
         "timestamp": utc_now(),
         "type": "run_complete",
         "preflight_status": preflight_report["status"],
+        "resume_from_stage": resume_stage_index,
     })
     log_step("Workflow completed successfully")
 

@@ -1,0 +1,7 @@
+{
+  "status": "blocked",
+  "attempts": 4,
+  "failure_class": "filesystem_policy",
+  "reason": "maximum repair attempts reached",
+  "final_log": ".self_heal/run_logs/run_attempt_04.log"
+}

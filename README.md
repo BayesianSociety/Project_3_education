@@ -34,6 +34,12 @@ Run the full workflow from the repository root:
 python3 orchestrator.py --project-brief Project_description.md
 ```
 
+Resume from a conservative checkpointed stage when prior stage artifacts are still valid:
+
+```bash
+python3 orchestrator.py --project-brief Project_description.md --resume-from-stage "Worker generation"
+```
+
 Run the Codex self-healing supervisor instead if you want automatic failure capture, Codex-driven repair attempts, and automatic reruns:
 
 ```bash
@@ -66,6 +72,7 @@ The orchestrator writes runtime state under `.orchestrator/`, including:
 - `manifests/*.json`
 - `worker_tasks/*.json`
 - `final_acceptance_summary.json`
+- `checkpoints.json`
 
 Editing workers run in isolated worktrees under `tmp/worktrees/`.
 
@@ -84,4 +91,4 @@ The self-healing supervisor writes its own state under `.self_heal/`, including:
   - `design/layout_refs/`
 - Validation commands are offline-safe and reject install commands such as `npm install` and `npm ci`.
 - The workflow treats [`Project_description.md`](/home/postnl/multi-agent-producer_V0/Project_3_education/Project_description.md) as the canonical brief and does not rely on hidden requirements.
-- The supervisor uses `codex exec` as a bounded repair agent. It captures orchestrator failures, classifies them, limits the editable file set, applies up to a configured number of repair attempts, and reruns automatically.
+- The supervisor uses `codex exec` as a bounded repair agent. It captures orchestrator failures, classifies them, limits the editable file set, applies up to a configured number of repair attempts, chooses a conservative `--resume-from-stage` value based on the repair scope, and reruns automatically.

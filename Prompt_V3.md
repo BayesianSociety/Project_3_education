@@ -203,6 +203,8 @@ The workflow must be phase-based and fail early. It should contain these stages 
 9. Runtime validation
 10. Final acceptance summary
 
+The orchestrator must persist explicit stage checkpoints so it can resume conservatively after a repair instead of always restarting from Stage 1.
+
 The practical flow is:
 - Context Analyst -> structured requirements
 - Orchestrator -> task plan and dependency graph
@@ -338,6 +340,7 @@ Define up front:
 - workspace root
 - timeout policy
 - canonical output locations
+- checkpoint location for resumable stage state
 
 ## Execution engine
 
@@ -371,6 +374,25 @@ Rules:
 - policy checks must compare changes within the worker execution scope rather than treating missing unrelated files as deletions
 
 Each agent step must only be allowed to create or modify approved files. It must not delete files unless deletion has been explicitly allowed by policy.
+
+## Checkpoints and resume
+
+The orchestrator must support conservative resume after repair.
+
+Requirements:
+- persist a checkpoint record after each completed stage
+- each checkpoint must record the stage name, timestamp, required artifact paths, and project brief hash
+- the orchestrator must support a CLI option to resume from a chosen stage
+- resume must verify that all prior required checkpoints and artifacts still exist before skipping earlier stages
+- resume must reload durable stage artifacts such as context analysis, plan, validation reports, and worker results instead of recomputing them
+- if a repair changes files that could invalidate earlier stages, the supervisor or orchestrator must restart from the earliest invalidated stage instead of resuming too late
+- resume behavior must be conservative; when validity is uncertain, restart from an earlier stage
+
+Acceptable conservative resume examples:
+- after a worker-scope code repair, resume from `Worker generation`
+- after an artifact/build/runtime validation fix, resume from `Artifact validation` or earlier
+- after planner or schema logic changes, resume from `Planner generation` or earlier
+- after context-ingestion logic changes, resume from `Context analysis` or Stage 1
 
 ## Manifest and provenance
 

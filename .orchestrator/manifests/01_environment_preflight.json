@@ -2,17 +2,17 @@
   "stage_index": 1,
   "stage_name": "Environment preflight",
   "note": "Environment preflight complete",
-  "generated_at": "2026-03-22T20:36:20.477277+00:00",
+  "generated_at": "2026-03-22T21:54:11.596359+00:00",
   "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
-  "snapshot_sha256": "1c0ce749140364bae7e1206c80f49459b22d4742e4b9030d1478cc885ad43e50",
+  "snapshot_sha256": "e1f5758589e5e852d78c3823a15a36a4b2ec44a0934a6aa4b436179ddeaa98e9",
   "files": {
     "Project_description.md": {
       "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
       "size": 16250
     },
     "README.md": {
-      "sha256": "b43a3001e56243ca1f8bc4d5e60cceef38ec86faea5637d342496f17c784dd43",
-      "size": 2459
+      "sha256": "0e6a2854ff08325fb63ccda5bd5bb62afc528750826523d60fc02b28dbb20ea6",
+      "size": 3373
     },
     "04.README.md": {
       "sha256": "43b44a9acc569d1b4efb53c315702d4313136a280033459f6fb00b6337afca21",
@@ -31,20 +31,64 @@
       "size": 5987
     },
     "Prompt_V3.md": {
-      "sha256": "c654e544d9d45a997750698eeb464e93a718076debeb8342a13fa5088639205e",
-      "size": 19165
+      "sha256": "98342e54f0557bb84a97d9ec3da9e21d75ee119bd0c0927d2d1667c56f3f4439",
+      "size": 20609
     },
     ".tmp_schema_test.json": {
       "sha256": "69e99f7f8143372c3c39d7162482cd247881374201baac2e215b883efc32de55",
       "size": 109
+    },
+    "codex_supervisor.py": {
+      "sha256": "9c1f92c837de2cb8b2b12e087a0edacc73b49e3686c187d5b0e390b8bf57e5dc",
+      "size": 25498
     },
     "05.Use.md": {
       "sha256": "462de6f23035b865ade0cc87ac306e16f614bbd6722b7882ba73edd5e14d65c1",
       "size": 133
     },
     "orchestrator.py": {
-      "sha256": "14a1fb50bcabe6600b900ee911f982f737c00a300572eb92e3fb61a7f4abedd6",
-      "size": 53808
+      "sha256": "9374ee8b93f7be0dfc42a71950e4e7c52a996629fc9b26b0097d9be3571abc00",
+      "size": 62229
+    },
+    ".self_heal/attempts.jsonl": {
+      "sha256": "ab9b714b4211d1ea4625bd9ea6fe6b17146344d53a35d0bbfb47de5326234614",
+      "size": 1751
+    },
+    ".self_heal/final_report.json": {
+      "sha256": "9b90c25582ebea21488f5cf5f608c8dd14ac5a4a2b4bfb93bc5f92295d419d5f",
+      "size": 186
+    },
+    ".self_heal/run_logs/run_attempt_03.log": {
+      "sha256": "f8c1d7464fadea5de9a23c02369ff9a864f16f807b5c404131626df728bf14cf",
+      "size": 1726
+    },
+    ".self_heal/run_logs/run_attempt_01.log": {
+      "sha256": "1a483e8428681ae294fc599cf08c4045c3e0566ac12cc8f6ba1ab7093397602c",
+      "size": 2378
+    },
+    ".self_heal/run_logs/run_attempt_04.log": {
+      "sha256": "da2a6ac5c17f1a20575b0959df600cb6be5e34006918716b80ded4151528f205",
+      "size": 1673
+    },
+    ".self_heal/run_logs/run_attempt_02.log": {
+      "sha256": "9c3d1e8ded829605e3181be067a77bc6a08b45dec57b66109292ba44b00d4bf7",
+      "size": 1413
+    },
+    ".self_heal/repair_logs/repair_attempt_03.json": {
+      "sha256": "b3c0267bc857ddc89450a27d4cf002df68ab27a8bf5f3749d990fc597ac34c28",
+      "size": 3947
+    },
+    ".self_heal/repair_logs/repair_attempt_01.json": {
+      "sha256": "7ede78c97de39dfa0d2607987cd984cd4212d99ca0a39ce7c8e209684c766317",
+      "size": 2663
+    },
+    ".self_heal/repair_logs/repair_attempt_02.json": {
+      "sha256": "538cc2303fe2925da22b58e8907831a091367da9100c0281496d3d5826473ee8",
+      "size": 1061
+    },
+    ".self_heal/schemas/repair_result.json": {
+      "sha256": "3dd7a0acabaff722227f04f8d5d588951b7ed02e458cb666b24e81f46e193f03",
+      "size": 839
     },
     "scripts/resetDb.ts": {
       "sha256": "c3e7e19bc694d5ebf6d9c646c6298e8cb184e067b17e1ea4a0fd962d236969f1",
@@ -74,21 +118,33 @@
       "sha256": "539a1961161aad0a1241ee2c038f21d3177bfcd0e875fd38028c6188feac55fb",
       "size": 2762
     },
+    "app/api/analytics/puzzle/[puzzleId]/route.ts": {
+      "sha256": "8bdbc07b2b53162fc5d5fd6c8e93f31887e0eb2a6eec56ccf35d71e9df94671a",
+      "size": 423
+    },
     "app/api/analytics/summary/route.ts": {
       "sha256": "9e3b96cb98bdc755189d96db3307c3499dfa97fc5b52b73624ab5ade0fbebc46",
       "size": 620
+    },
+    "app/api/analytics/attempts/[attemptId]/route.ts": {
+      "sha256": "3d33f6090337dd976487506874df9ce9842972f016af33b8c72e7146d1a58003",
+      "size": 437
+    },
+    "app/api/analytics/movements/[attemptId]/route.ts": {
+      "sha256": "96b2c398a53f31f51e22c96a2f82eebf2dc7c1be6fbcc9a85a48641338b607dc",
+      "size": 432
     },
     "app/api/events/batch/route.ts": {
       "sha256": "8658076cb79c1f851896b2f05cbd5eb79059d8c4bed95adbb06fe36ceb7ee017",
       "size": 3238
     },
     ".orchestrator/context_analysis.json": {
-      "sha256": "cdce417f395899b863247ac402f94ec0732ee8092dfc65aa1ea8a6529ad64648",
-      "size": 4299
+      "sha256": "54c274b500e816b5b41279e25a55e13262692d0dc2cd2008453975dddf6dfb4f",
+      "size": 4683
     },
     ".orchestrator/plan.json": {
-      "sha256": "aef0e001fa3a97ddefdcbb58eed2e94bf6eed20647d0049282e18910cd20f74b",
-      "size": 10764
+      "sha256": "94aa75e5693adaad7e222df45ac1f162189d39c6ed250181ed6fad64b1fdf965",
+      "size": 13663
     },
     ".orchestrator/runtime_config.json": {
       "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
@@ -99,40 +155,40 @@
       "size": 146
     },
     ".orchestrator/decision_log.jsonl": {
-      "sha256": "f32f475fbf9ca3023009edb081c8b44e48ff7cacab75737330f9b00c6d74720f",
-      "size": 5712
+      "sha256": "b90fb50df9380cf95743055247debce6dc1a69e7b812ea327bcbac3423b43cd2",
+      "size": 11506
     },
     ".orchestrator/worker_tasks/backend_producer.json": {
-      "sha256": "034b1a4985cfa49e3c0c91b0fc57d24c28d8e298d6def1a61e19fb270417a622",
-      "size": 2921
+      "sha256": "b926eb797fedc44d87db08d2dac5c202f1495089bcf18a12cbe19e49147fda47",
+      "size": 3705
     },
     ".orchestrator/worker_tasks/frontend_producer.json": {
-      "sha256": "4abfb9ba9e483f06f0314c6c497686fa4592eb85c2e99b551c62dad3f43c9bc0",
-      "size": 3426
+      "sha256": "1de69cb23632a1de1cf56a4f0a6c8fd1549135f25f1c40f58ba9d35a68615d72",
+      "size": 5231
     },
     ".orchestrator/manifests/05_planner_repair_loop_if_needed.json": {
-      "sha256": "a65364cab69943bfff50fb7fcd562f704af03f744ef37cfdf6ffab25e135e770",
-      "size": 11707
+      "sha256": "1b5ecee58287639bc615543b39c939be329e3bcd64ce3d8751519eeda6265c5f",
+      "size": 8797
     },
     ".orchestrator/manifests/02_context_analysis.json": {
-      "sha256": "5c10d80e9a3a3063d9ff04cc703d597e896351bf0d14df6a7bc326006207c47b",
-      "size": 10088
+      "sha256": "cca8d41d81792a4ba03fdd8e1f5f3214babaec44867cf26611f859e3b16bb85a",
+      "size": 8777
     },
     ".orchestrator/manifests/03_planner_generation.json": {
-      "sha256": "c432f2bbcfdf0a33d49de0d264b35892c738d01290b3174e72f4a44a3337721e",
-      "size": 11689
+      "sha256": "6809491702ac5a63f36afeedaa0234d397d59bed912b6c436dac629f5b3e6a3b",
+      "size": 8780
     },
     ".orchestrator/manifests/01_environment_preflight.json": {
-      "sha256": "4da6db79c8c11ae864d7c88b09b5ff7621f39e06420d0aa893a5d1194ab7839b",
-      "size": 10097
+      "sha256": "709d8184a33c74b2c46b937bd20e5cd060b79bfe3278eade3ce1600b38c09b4d",
+      "size": 8788
     },
     ".orchestrator/manifests/04_planner_schema_validation.json": {
-      "sha256": "017f2d1bba615d20ec6c7fa8b23104a7fbd3d91d36b4f5d82df0ba7afeee4613",
-      "size": 11696
+      "sha256": "7220acd64dc3628df2017d0742046e48a97eb2cd5b33d983c7daffcd2a1ae464",
+      "size": 8787
     },
     ".orchestrator/reports/environment_preflight.json": {
-      "sha256": "6413dcd539a738966c6e99c8bd9ae5fdd4eed0b8e03c43b293fe7cfa02adbe6f",
-      "size": 573
+      "sha256": "42a09e4a66a6b8c67221e12cbc8ee7108c2436f7687994b42fd98e7efe4e70f2",
+      "size": 418
     },
     ".orchestrator/schemas/context_analysis.json": {
       "sha256": "e88fdcf0cdda3b0c6e40a93c97c2ca62af9c9e321a79b250eb147d5f577c03fa",
@@ -175,158 +231,6 @@
       "size": 586164
     },
     "design/layout_refs/layout.png": {
-      "sha256": "f6b4d8065330c0342893d85b0c6689be5cfb9f8b2b1c1a60c584c461683c1b03",
-      "size": 1073447
-    },
-    "tmp/worktrees/frontend_producer/Project_description.md": {
-      "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
-      "size": 16250
-    },
-    "tmp/worktrees/frontend_producer/README.md": {
-      "sha256": "b43a3001e56243ca1f8bc4d5e60cceef38ec86faea5637d342496f17c784dd43",
-      "size": 2459
-    },
-    "tmp/worktrees/frontend_producer/04.README.md": {
-      "sha256": "43b44a9acc569d1b4efb53c315702d4313136a280033459f6fb00b6337afca21",
-      "size": 22
-    },
-    "tmp/worktrees/frontend_producer/Design_of_project_description.md": {
-      "sha256": "8377121284625c061eb54674e662a3795f0a3ce6798c578bb38d0377c1cd9357",
-      "size": 6157
-    },
-    "tmp/worktrees/frontend_producer/Game_description.md": {
-      "sha256": "092183da1f225f807645c36b24c4dc0b569c0db3aefa9aec7837cef3e031b169",
-      "size": 18665
-    },
-    "tmp/worktrees/frontend_producer/03.Errors_selfheal_wrapper.md": {
-      "sha256": "3a53a1967bc0fed8a71007c2bb436406d987d4aa6c2e653654c43fe68f1fb506",
-      "size": 5987
-    },
-    "tmp/worktrees/frontend_producer/Prompt_V3.md": {
-      "sha256": "74174eea44c034b02a318e39afd03a8c14bc000dab86ea36013704494b621197",
-      "size": 15741
-    },
-    "tmp/worktrees/frontend_producer/multi_agent_workflow_deterministic_ver3_finance.py": {
-      "sha256": "3c2a6f160274f8b58007130dbb763e80d3f9e66276bbc16267d825a5a111fbfb",
-      "size": 306
-    },
-    "tmp/worktrees/frontend_producer/05.Use.md": {
-      "sha256": "462de6f23035b865ade0cc87ac306e16f614bbd6722b7882ba73edd5e14d65c1",
-      "size": 133
-    },
-    "tmp/worktrees/frontend_producer/orchestrator.py": {
-      "sha256": "a5731095e048fec5befc434939d258a93176a9d5122fa7b36a8157dbeede9eb7",
-      "size": 51730
-    },
-    "tmp/worktrees/frontend_producer/data/puzzles.ts": {
-      "sha256": "76062099fc703f1e0661e80aabd47a2296873808efd2f93e61ed8e7fdfdb607a",
-      "size": 8721
-    },
-    "tmp/worktrees/frontend_producer/styles/workspace.css": {
-      "sha256": "5f6384692f4ef61dc8f97b1eb5cb492c17bd1da15f7a1a136f9be522c9135479",
-      "size": 3225
-    },
-    "tmp/worktrees/frontend_producer/styles/theme.css": {
-      "sha256": "6cac0545c4885d4e1594b4bb9ee97a60d41415d3bddbf32609d8c1d831ec8abf",
-      "size": 3383
-    },
-    "tmp/worktrees/frontend_producer/lib/game/blockCompiler.ts": {
-      "sha256": "b499f03327131c186f4ce0dde24085c8db64ba6f487d8b7264ea9cf590ffa7e9",
-      "size": 5464
-    },
-    "tmp/worktrees/frontend_producer/lib/game/animationRunner.ts": {
-      "sha256": "c869250aa81cf559e2bd63190d6b7a9f7d00f506b9fdcb7cbb96a3f94bf53507",
-      "size": 2755
-    },
-    "tmp/worktrees/frontend_producer/lib/game/puzzleRegistry.ts": {
-      "sha256": "c98c49f67cf3fac67dc12885317eb277921d06e304c7ededdd64aca61e255ba4",
-      "size": 1121
-    },
-    "tmp/worktrees/frontend_producer/lib/game/workspaceWarnings.ts": {
-      "sha256": "cd86946e8eb2be19875aa51ebd267e4e9e63c7fdd477d0f10bee7ffdf38cc8dc",
-      "size": 1015
-    },
-    "tmp/worktrees/frontend_producer/lib/game/telemetryClient.ts": {
-      "sha256": "b01939b7533f294408f08ffc5d106a18c9a03b8ecd2ae5b3c08639cc3cedd4b0",
-      "size": 1094
-    },
-    "tmp/worktrees/frontend_producer/lib/game/executionEngine.ts": {
-      "sha256": "433a2183573e95c84e1887d7b6d9070e3b796fb8ca2b4da48c9971ab8aaa6686",
-      "size": 10377
-    },
-    "tmp/worktrees/frontend_producer/app/layout.tsx": {
-      "sha256": "9fd38d9247fadaf750d783c3868225b2a92a229f91eea424976d532c4c7fd61f",
-      "size": 329
-    },
-    "tmp/worktrees/frontend_producer/app/page.tsx": {
-      "sha256": "fdcf37b6c23ba25a65ded5ed2c59bcb4a60bcf7a846bd73f2d1e364215a0092c",
-      "size": 584
-    },
-    "tmp/worktrees/frontend_producer/app/levels/page.tsx": {
-      "sha256": "fb4b05a4e60f148421248118ce6c9983eaf446ab909a844c63df6b68c9b82e8d",
-      "size": 896
-    },
-    "tmp/worktrees/frontend_producer/components/BlockWorkspace.tsx": {
-      "sha256": "dc4ef0404c2f414f8d8d7b56963f2d85ef0579f7fe4d9729040c9e4b8f07554a",
-      "size": 11751
-    },
-    "tmp/worktrees/frontend_producer/components/AnalyticsCharts.tsx": {
-      "sha256": "55807713f325ea7b56e2d288a0e0a0ec1c8be8364c0c3ad01567b1392fe4e7f6",
-      "size": 948
-    },
-    "tmp/worktrees/frontend_producer/components/LevelSelect.tsx": {
-      "sha256": "7ae881cd4a0e06d35fd974d5df1caab500ef3051f1c8bcb09bea9ef283c6f2fc",
-      "size": 1294
-    },
-    "tmp/worktrees/frontend_producer/components/ControlsPanel.tsx": {
-      "sha256": "3a84e9da1da2f1f69152743175bffb20c89ef4ffbe5bd958afc99e82ce9928b6",
-      "size": 1203
-    },
-    "tmp/worktrees/frontend_producer/components/FailureModal.tsx": {
-      "sha256": "081e6c43c61b63e0fae76213ab752368366cd9fae887b58c3e8ff9a4da7a2e01",
-      "size": 658
-    },
-    "tmp/worktrees/frontend_producer/components/TopBar.tsx": {
-      "sha256": "7f65a51d65c2fd7206cbb6be55933d858795a48549c134ecc074eed20364ffa2",
-      "size": 1009
-    },
-    "tmp/worktrees/frontend_producer/components/TelemetryDebugPanel.tsx": {
-      "sha256": "8743faf424f7faac37e992fcc1af7bca594a2b526eb8271dcabc747f148f0ada",
-      "size": 552
-    },
-    "tmp/worktrees/frontend_producer/components/SceneCanvas.tsx": {
-      "sha256": "a14fad8990fa3a2f394047bab58a092758faaf44d92322dc57d67a300494194b",
-      "size": 1194
-    },
-    "tmp/worktrees/frontend_producer/.orchestrator/runtime_config.json": {
-      "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
-      "size": 532
-    },
-    "tmp/worktrees/frontend_producer/.orchestrator/decision_log.jsonl": {
-      "sha256": "c182b83833c59e7a3a76094a3263f658862be9ee620f30769d97629ded583858",
-      "size": 236
-    },
-    "tmp/worktrees/frontend_producer/public/assets/sprites/obstacle.png": {
-      "sha256": "f30145007f8fe82dbf4332fe3c773fe9ee9d384dc18e36c3af4c56fefe6d03bc",
-      "size": 690
-    },
-    "tmp/worktrees/frontend_producer/public/assets/sprites/main_character.png": {
-      "sha256": "4b5ace207b9656b51a39b788dbc5ef9c95f50d4f4ce8ad98db9edb958413a460",
-      "size": 6899
-    },
-    "tmp/worktrees/frontend_producer/public/assets/sprites/food.png": {
-      "sha256": "6fd4817c5aeff9e4b2785e9a120b7dc721b1191b284cb9828494868e8c55bd96",
-      "size": 12503
-    },
-    "tmp/worktrees/frontend_producer/public/assets/sprites/place.png": {
-      "sha256": "ae7f8f9ff243fbb1c571a30b8af665224d93da8a986025c66ecc9ebb5275dfa3",
-      "size": 7777
-    },
-    "tmp/worktrees/frontend_producer/public/assets/backgrounds/clinic-room.jpg": {
-      "sha256": "4febec01f56cdb1df55bee6341293aa25a3d895c497768bc0220d4b883a7cac4",
-      "size": 586164
-    },
-    "tmp/worktrees/frontend_producer/design/layout_refs/layout.png": {
       "sha256": "f6b4d8065330c0342893d85b0c6689be5cfb9f8b2b1c1a60c584c461683c1b03",
       "size": 1073447
     }

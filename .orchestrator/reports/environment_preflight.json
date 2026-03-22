@@ -8,8 +8,7 @@
     "npm": "11.6.1"
   },
   "worktree_list": [
-    "/home/postnl/multi-agent-producer_V0/Project_3_education                                  e1e4670 [feature/orchestrator]",
-    "/home/postnl/multi-agent-producer_V0/Project_3_education/tmp/worktrees/frontend_producer  e1e4670 (detached HEAD)"
+    "/home/postnl/multi-agent-producer_V0/Project_3_education  4b0aa64 [feature/supervisor]"
   ],
   "asset_dirs": [
     "public/assets/backgrounds",

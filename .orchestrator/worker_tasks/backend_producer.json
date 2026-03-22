@@ -1,45 +1,46 @@
 {
   "role": "Backend Producer",
-  "summary": "Own project configuration, SQLite schema + seeding, session/attempt APIs, telemetry ingestion, analytics endpoints, and verification scripts so telemetry-backed progression works end-to-end.",
+  "summary": "Stand up the Next.js configuration, SQLite schema bootstrap, puzzle data module, telemetry ingestion pipeline, analytics query layer, REST endpoints, and verification/contract docs.",
   "owned_paths": [
     "package.json",
-    "package-lock.json",
     "tsconfig.json",
     "next.config.mjs",
-    "eslint.config.mjs",
-    "db/migrations/init.sql",
+    "next-env.d.ts",
     "app/api/session/start/route.ts",
     "app/api/session/end/route.ts",
     "app/api/attempts/start/route.ts",
-    "app/api/attempts/[attemptId]/complete/route.ts",
+    "app/api/attempts/complete/route.ts",
     "app/api/events/batch/route.ts",
     "app/api/analytics/summary/route.ts",
     "app/api/analytics/puzzle/[puzzleId]/route.ts",
-    "app/api/analytics/attempts/route.ts",
+    "app/api/analytics/attempts/[attemptId]/route.ts",
     "app/api/analytics/movements/[attemptId]/route.ts",
     "lib/db/client.ts",
     "lib/db/migrations.ts",
     "lib/db/schema.ts",
     "lib/puzzles/definitions.ts",
-    "lib/puzzles/progression.ts",
-    "lib/puzzles/seed.ts",
+    "lib/puzzles/types.ts",
+    "lib/server/sessionService.ts",
+    "lib/server/attemptService.ts",
+    "lib/server/analyticsService.ts",
+    "lib/server/progressionService.ts",
     "lib/telemetry/ingest.ts",
     "lib/telemetry/analytics.ts",
-    "lib/server/session.ts",
-    "scripts/resetDb.ts",
-    "scripts/verifyTelemetryFlow.ts"
+    "lib/api/contracts.ts",
+    "docs/architecture/api-contracts.md",
+    "docs/architecture/telemetry-contract.md",
+    "scripts/verify/simulate_run.ts",
+    "scripts/verify/seedAnalytics.ts"
   ],
   "required_outputs": [
     "package.json",
     "app/api/session/start/route.ts",
-    "app/api/session/end/route.ts",
-    "app/api/attempts/start/route.ts",
-    "app/api/attempts/[attemptId]/complete/route.ts",
     "app/api/events/batch/route.ts",
     "app/api/analytics/summary/route.ts",
     "lib/puzzles/definitions.ts",
-    "lib/puzzles/progression.ts",
-    "scripts/verifyTelemetryFlow.ts"
+    "lib/server/sessionService.ts",
+    "docs/architecture/api-contracts.md",
+    "scripts/verify/simulate_run.ts"
   ],
   "read_only_inputs": [
     "Project_description.md",
@@ -48,56 +49,54 @@
     "design/layout_refs/layout.png",
     "public/assets/backgrounds/background.jpg",
     "public/assets/sprites/main_character.png",
-    "public/assets/sprites/place.png",
     "public/assets/sprites/obstacle.png",
+    "public/assets/sprites/place.png",
     "public/assets/sprites/food.png",
-    ".orchestrator/context_analysis.json"
+    "scripts/resetDb.ts"
   ],
   "forbidden_paths": [
-    "app/layout.tsx",
-    "app/page.tsx",
-    "app/puzzles/page.tsx",
-    "app/play/[puzzleId]/page.tsx",
-    "app/analytics/page.tsx",
-    "components/blockly/BlocklyWorkspace.tsx",
-    "components/workspace/RunControls.tsx",
-    "components/scene/GameStage.tsx",
-    "lib/game/compiler.ts",
-    "lib/game/runtime.ts",
-    "lib/client/telemetry.ts"
+    "public/assets/backgrounds/background.jpg",
+    "public/assets/sprites/main_character.png",
+    "public/assets/sprites/obstacle.png",
+    "public/assets/sprites/place.png",
+    "public/assets/sprites/food.png",
+    "design/layout_refs/layout.png"
   ],
-  "dependencies": [
-    "Architect"
-  ],
+  "dependencies": [],
   "contracts": [
-    "Seed the `puzzles` table from `lib/puzzles/definitions.ts` and enforce lock/unlock order plus hint metadata in `lib/puzzles/progression.ts` before issuing session data.",
-    "Session endpoints must create/update `users`, `sessions`, and `puzzle_progress`, returning unlocked puzzle metadata and goal TTS strings for the frontend.",
-    "Telemetry ingestion and analytics routes must record attempts/events/movements atomically (including code snapshots, hint counts, collisions, speeds) and expose summaries/detail queries consumed by analytics UI and verification scripts."
+    "docs/architecture/api-contracts.md",
+    "docs/architecture/telemetry-contract.md"
   ],
   "validation_rules": [
     {
-      "name": "Session start handler",
-      "kind": "contains_text",
+      "name": "SessionStartRoute",
+      "kind": "file_exists",
       "target": "app/api/session/start/route.ts",
-      "expectation": "export async function POST"
+      "expectation": "Handler validates payload, creates/updates users and sessions, and returns IDs for telemetry linkage."
     },
     {
-      "name": "Telemetry persistence",
+      "name": "SessionEndRoute",
+      "kind": "file_exists",
+      "target": "app/api/session/end/route.ts",
+      "expectation": "Completes sessions, updates attempts, and records ended_at timestamps."
+    },
+    {
+      "name": "TelemetryBatchRoute",
       "kind": "contains_text",
       "target": "app/api/events/batch/route.ts",
-      "expectation": "persistTelemetryBatch"
+      "expectation": "Route parses arrays of events/movements, invokes persistTelemetryBatch, and rejects empty submissions."
     },
     {
-      "name": "Puzzle catalog enriched",
+      "name": "AnalyticsSummaryRoute",
       "kind": "contains_text",
-      "target": "lib/puzzles/definitions.ts",
-      "expectation": "availableBlocks"
+      "target": "app/api/analytics/summary/route.ts",
+      "expectation": "Uses buildAnalyticsSummary from lib/telemetry/analytics to deliver totals, puzzle summaries, and recent attempts."
     },
     {
-      "name": "Telemetry smoke log",
-      "kind": "contains_text",
-      "target": "scripts/verifyTelemetryFlow.ts",
-      "expectation": "Telemetry flow ok"
+      "name": "SimulateRunScript",
+      "kind": "offline_command",
+      "target": "node scripts/verify/simulate_run.ts",
+      "expectation": "Script instantiates puzzles, fakes execution, and logs attempts/events/movements counts via better-sqlite3."
     }
   ]
 }

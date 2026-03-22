@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import textwrap
@@ -32,6 +33,7 @@ ATTEMPTS_JSONL = SELF_HEAL_DIR / "attempts.jsonl"
 FINAL_REPORT_JSON = SELF_HEAL_DIR / "final_report.json"
 DECISION_LOG = ROOT / ".orchestrator" / "decision_log.jsonl"
 PLAN_JSON = ROOT / ".orchestrator" / "plan.json"
+CHECKPOINTS_JSON = ROOT / ".orchestrator" / "checkpoints.json"
 PROMPT_V3 = ROOT / "Prompt_V3.md"
 README_MD = ROOT / "README.md"
 
@@ -64,6 +66,14 @@ class RepairResult:
     verification: List[str]
     blockers: List[str]
     usage: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class FailureDiagnosis:
+    classifier: str
+    summary: str
+    hints: List[str] = field(default_factory=list)
+    suspected_files: List[str] = field(default_factory=list)
 
 
 def utc_now() -> str:
@@ -133,6 +143,13 @@ def build_orchestrator_command(args: argparse.Namespace) -> List[str]:
     if args.dry_run_preflight:
         command.append("--dry-run-preflight")
     return command
+
+
+def with_resume_stage(command: Sequence[str], resume_stage: Optional[str]) -> List[str]:
+    updated = list(command)
+    if resume_stage:
+        updated.extend(["--resume-from-stage", resume_stage])
+    return updated
 
 
 def run_streaming(command: Sequence[str], timeout: int) -> ProcessResult:
@@ -227,7 +244,73 @@ def load_plan_paths() -> Set[str]:
     return paths
 
 
-def allowed_files_for_failure(classifier: str) -> List[str]:
+def load_plan_payload() -> Dict[str, Any]:
+    if not PLAN_JSON.exists():
+        return {}
+    try:
+        data = json.loads(PLAN_JSON.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def extract_created_outside_allowlist(output: str) -> List[str]:
+    matches = re.findall(r"Created outside allowlist: ([^;\n]+)", output)
+    return [item.strip() for item in matches if item.strip()]
+
+
+def find_owner_for_path(plan_payload: Dict[str, Any], rel_path: str) -> Optional[str]:
+    for task in plan_payload.get("worker_tasks", []):
+        if rel_path in task.get("owned_paths", []):
+            return str(task.get("role", ""))
+    return None
+
+
+def diagnose_failure(classifier: str, output: str) -> FailureDiagnosis:
+    diagnosis = FailureDiagnosis(classifier=classifier, summary=f"Failure class: {classifier}")
+    if classifier != "filesystem_policy":
+        return diagnosis
+
+    created_paths = extract_created_outside_allowlist(output)
+    if not created_paths:
+        diagnosis.summary = "Filesystem policy failure without explicit created-path details"
+        return diagnosis
+
+    plan_payload = load_plan_payload()
+    owned_matches = [path for path in created_paths if find_owner_for_path(plan_payload, path)]
+    bracket_paths = [path for path in owned_matches if "[" in path and "]" in path]
+
+    if bracket_paths and len(owned_matches) == len(created_paths):
+        diagnosis.classifier = "filesystem_policy_bracket_path_mismatch"
+        diagnosis.summary = "Created files are already owned by the worker, and bracketed Next.js route segments likely failed literal path matching."
+        diagnosis.hints = [
+            "Inspect allowlist/path matching before changing the plan or worker prompts.",
+            "Treat Next.js dynamic route paths containing [segment] as literal path text, not glob character classes.",
+            "Prefer fixing the orchestrator matcher over broadening worker ownership.",
+        ]
+        diagnosis.suspected_files = sorted(set([ORCHESTRATOR.name, *bracket_paths]))
+        return diagnosis
+
+    if owned_matches and len(owned_matches) == len(created_paths):
+        diagnosis.classifier = "filesystem_policy_owned_path_mismatch"
+        diagnosis.summary = "Created files are already listed in worker owned_paths, so policy matching or path normalization is likely wrong."
+        diagnosis.hints = [
+            "Compare created file paths with worker owned_paths before editing the plan.",
+            "Inspect orchestrator allowlist and path normalization logic.",
+        ]
+        diagnosis.suspected_files = sorted(set([ORCHESTRATOR.name, *owned_matches]))
+        return diagnosis
+
+    diagnosis.summary = "Filesystem policy failure appears to involve paths not fully covered by owned_paths."
+    diagnosis.hints = [
+        "Compare worker created files against owned_paths and required_outputs.",
+        "Only expand ownership if the files are truly missing from the plan.",
+    ]
+    diagnosis.suspected_files = sorted(set(created_paths))
+    return diagnosis
+
+
+def allowed_files_for_failure(classifier: str, diagnosis: Optional[FailureDiagnosis] = None) -> List[str]:
     base = {
         ORCHESTRATOR.name,
         Path(__file__).name,
@@ -237,6 +320,10 @@ def allowed_files_for_failure(classifier: str) -> List[str]:
     plan_paths = load_plan_paths()
     if classifier in {"artifact_validation", "build_validation", "runtime_validation", "filesystem_policy", "unknown", "codex_exec_failure"}:
         base.update(plan_paths)
+    if diagnosis:
+        base.update(diagnosis.suspected_files)
+        if diagnosis.classifier in {"filesystem_policy_bracket_path_mismatch", "filesystem_policy_owned_path_mismatch"}:
+            base = {item for item in base if item in {ORCHESTRATOR.name, Path(__file__).name, PROMPT_V3.name, README_MD.name} or item in diagnosis.suspected_files}
     return sorted(base)
 
 
@@ -265,6 +352,7 @@ def write_schema() -> Path:
 def build_repair_prompt(
     attempt: int,
     classifier: str,
+    diagnosis: FailureDiagnosis,
     orchestrator_command: Sequence[str],
     failure_output: str,
     allowed_files: Sequence[str],
@@ -283,6 +371,8 @@ def build_repair_prompt(
 
         Repair attempt: {attempt}
         Failure class: {classifier}
+        Local pre-diagnosis:
+        {diagnosis.summary}
 
         Editable files only:
         {json.dumps(list(allowed_files), indent=2)}
@@ -295,6 +385,10 @@ def build_repair_prompt(
         - If the fix requires prompt hardening for future runs, you may edit `Prompt_V3.md` if it is in the allowed list.
         - Run lightweight local verification after editing if possible.
         - Return only JSON matching the provided schema.
+        - Treat the local pre-diagnosis as strong evidence unless the code clearly disproves it.
+
+        Local repair hints:
+        {json.dumps(diagnosis.hints, indent=2)}
 
         Recent combined orchestrator output:
         ```text
@@ -396,6 +490,39 @@ def fingerprint_failure(classifier: str, output: str) -> str:
     return sha256_bytes(normalized.encode("utf-8"))
 
 
+def choose_resume_stage(changed_files: Sequence[str], diagnosis: FailureDiagnosis) -> Optional[str]:
+    changed = set(changed_files)
+    if not changed:
+        return None
+    if changed <= {"README.md"}:
+        return "Final acceptance summary"
+    if changed & {"orchestrator.py"}:
+        if diagnosis.classifier in {
+            "stale_worktree",
+            "dependency_deadlock",
+            "filesystem_policy",
+            "filesystem_policy_bracket_path_mismatch",
+            "filesystem_policy_owned_path_mismatch",
+        }:
+            return "Worker generation"
+        if diagnosis.classifier in {"build_validation", "runtime_validation", "artifact_validation"}:
+            return "Artifact validation"
+        if diagnosis.classifier in {"schema_compatibility", "codex_exec_failure"}:
+            return "Context analysis"
+        return "Planner generation"
+    if changed & {"Prompt_V3.md"}:
+        return "Planner generation"
+    if any(path.startswith(".orchestrator/") for path in changed):
+        return "Planner generation"
+    if any(path.startswith(("app/", "components/", "lib/", "styles/", "scripts/", "db/", "docs/", "hooks/", "data/")) for path in changed):
+        if diagnosis.classifier in {"build_validation", "runtime_validation", "artifact_validation"}:
+            return "Artifact validation"
+        return "Worker generation"
+    if any(path.endswith((".json", ".ts", ".tsx", ".js", ".jsx", ".sql", ".css", ".md")) for path in changed):
+        return "Worker generation"
+    return None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Codex self-healing supervisor for orchestrator.py")
     parser.add_argument("--project-brief", default="Project_description.md", help="Path to Project_description.md")
@@ -413,11 +540,13 @@ def main() -> int:
     ensure_dirs()
     schema_path = write_schema()
     orchestrator_command = build_orchestrator_command(args)
+    next_resume_stage: Optional[str] = None
     seen_fingerprints: Dict[str, int] = {}
 
     for run_attempt in range(1, args.max_heal_attempts + 2):
-        log_step(f"Supervisor run attempt {run_attempt}: {' '.join(orchestrator_command)}")
-        result = run_streaming(orchestrator_command, timeout=args.run_timeout)
+        command_for_run = with_resume_stage(orchestrator_command, next_resume_stage)
+        log_step(f"Supervisor run attempt {run_attempt}: {' '.join(command_for_run)}")
+        result = run_streaming(command_for_run, timeout=args.run_timeout)
         run_log_path = RUN_LOGS_DIR / f"run_attempt_{run_attempt:02d}.log"
         write_text(run_log_path, result.output)
         append_jsonl(ATTEMPTS_JSONL, {
@@ -426,13 +555,14 @@ def main() -> int:
             "attempt": run_attempt,
             "exit_code": result.exit_code,
             "duration_seconds": result.duration_seconds,
+            "resume_from_stage": next_resume_stage,
             "log_path": str(run_log_path.relative_to(ROOT)),
         })
         if result.exit_code == 0:
             report = {
                 "status": "completed",
                 "attempts": run_attempt,
-                "command": orchestrator_command,
+                "command": command_for_run,
                 "final_log": str(run_log_path.relative_to(ROOT)),
             }
             write_text(FINAL_REPORT_JSON, json.dumps(report, indent=2))
@@ -440,36 +570,48 @@ def main() -> int:
             return 0
 
         classifier = classify_failure(result.output)
-        fingerprint = fingerprint_failure(classifier, result.output)
+        diagnosis = diagnose_failure(classifier, result.output)
+        fingerprint = fingerprint_failure(diagnosis.classifier, result.output)
         seen_fingerprints[fingerprint] = seen_fingerprints.get(fingerprint, 0) + 1
         if run_attempt > args.max_heal_attempts or seen_fingerprints[fingerprint] > 2:
             report = {
                 "status": "blocked",
                 "attempts": run_attempt,
-                "failure_class": classifier,
+                "failure_class": diagnosis.classifier,
                 "reason": "maximum repair attempts reached" if run_attempt > args.max_heal_attempts else "repeated failure fingerprint",
                 "final_log": str(run_log_path.relative_to(ROOT)),
+                "diagnosis": asdict(diagnosis),
             }
             write_text(FINAL_REPORT_JSON, json.dumps(report, indent=2))
             return result.exit_code or 1
 
-        allowed_files = allowed_files_for_failure(classifier)
+        append_jsonl(ATTEMPTS_JSONL, {
+            "timestamp": utc_now(),
+            "type": "failure_diagnosis",
+            "attempt": run_attempt,
+            "failure_class": classifier,
+            "diagnosis": asdict(diagnosis),
+        })
+        allowed_files = allowed_files_for_failure(classifier, diagnosis)
         before = snapshot_workspace(ROOT)
-        prompt = build_repair_prompt(run_attempt, classifier, orchestrator_command, result.output, allowed_files)
+        prompt = build_repair_prompt(run_attempt, diagnosis.classifier, diagnosis, command_for_run, result.output, allowed_files)
         repair = run_codex_repair(prompt, schema_path, timeout=args.repair_timeout)
         verify_python_files()
         after = snapshot_workspace(ROOT)
         changed_files = diff_snapshots(before, after)
         disallowed_changes = sorted(path for path in changed_files if path not in allowed_files)
+        next_resume_stage = choose_resume_stage(changed_files, diagnosis)
         repair_log_payload = {
             "timestamp": utc_now(),
             "type": "repair_attempt",
             "attempt": run_attempt,
-            "failure_class": classifier,
+            "failure_class": diagnosis.classifier,
             "allowed_files": allowed_files,
+            "diagnosis": asdict(diagnosis),
             "repair_result": asdict(repair),
             "detected_changed_files": changed_files,
             "disallowed_changes": disallowed_changes,
+            "next_resume_stage": next_resume_stage,
         }
         repair_log_path = REPAIR_LOGS_DIR / f"repair_attempt_{run_attempt:02d}.json"
         write_text(repair_log_path, json.dumps(repair_log_payload, indent=2))
@@ -477,19 +619,21 @@ def main() -> int:
             "timestamp": utc_now(),
             "type": "repair_attempt",
             "attempt": run_attempt,
-            "failure_class": classifier,
+            "failure_class": diagnosis.classifier,
             "repair_log_path": str(repair_log_path.relative_to(ROOT)),
             "final_status": repair.final_status,
             "detected_changed_files": changed_files,
+            "next_resume_stage": next_resume_stage,
         })
         if disallowed_changes:
             report = {
                 "status": "blocked",
                 "attempts": run_attempt,
-                "failure_class": classifier,
+                "failure_class": diagnosis.classifier,
                 "reason": "repair edited files outside the allowed set",
                 "repair_log": str(repair_log_path.relative_to(ROOT)),
                 "disallowed_changes": disallowed_changes,
+                "diagnosis": asdict(diagnosis),
             }
             write_text(FINAL_REPORT_JSON, json.dumps(report, indent=2))
             return 1
@@ -497,13 +641,17 @@ def main() -> int:
             report = {
                 "status": "blocked",
                 "attempts": run_attempt,
-                "failure_class": classifier,
+                "failure_class": diagnosis.classifier,
                 "reason": "repair agent reported blocked without changing files",
                 "repair_log": str(repair_log_path.relative_to(ROOT)),
+                "diagnosis": asdict(diagnosis),
             }
             write_text(FINAL_REPORT_JSON, json.dumps(report, indent=2))
             return 1
-        log_step(f"Repair attempt {run_attempt} complete; rerunning orchestrator")
+        if next_resume_stage:
+            log_step(f"Repair attempt {run_attempt} complete; rerunning orchestrator from {next_resume_stage}")
+        else:
+            log_step(f"Repair attempt {run_attempt} complete; rerunning orchestrator from Stage 1")
 
     return 1
 
