@@ -1,0 +1,16 @@
+{
+  "model": "gpt-5.1-codex",
+  "sandbox_mode": "workspace-write",
+  "approval_policy": "never",
+  "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
+  "timeout_policy_seconds": 1800,
+  "project_brief_path": "Project_description.md",
+  "canonical_output_locations": {
+    "orchestrator_dir": ".orchestrator",
+    "manifests": ".orchestrator/manifests",
+    "reports": ".orchestrator/reports",
+    "worker_tasks": ".orchestrator/worker_tasks",
+    "worktrees": "tmp/worktrees"
+  },
+  "max_concurrency": 2
+}
