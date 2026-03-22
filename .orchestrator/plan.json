@@ -1,0 +1,306 @@
+{
+  "task_summary": "Deliver the Block Coding Puzzles Next.js 16 app: a Pixi-powered WebGL scene plus Blockly workspace that teaches sequencing, loops, and conditionals across three puzzles while logging SQLite telemetry/analytics through better-sqlite3 APIs and providing verification scripts for DB + event integrity.",
+  "project_brief_path": "Project_description.md",
+  "stages": [
+    "Environment preflight",
+    "Context analysis",
+    "Planner generation",
+    "Planner schema validation",
+    "Planner repair loop if needed",
+    "Worker generation",
+    "Artifact validation",
+    "Build validation",
+    "Runtime validation",
+    "Final acceptance summary"
+  ],
+  "roles": [
+    "Orchestrator",
+    "Context Analyst",
+    "Architect",
+    "Backend Producer",
+    "Frontend Producer",
+    "Verification Agent"
+  ],
+  "shared_artifacts": [
+    "Project_description.md",
+    "Design_of_project_description.md",
+    "Game_description.md",
+    "design/layout_refs/layout.png",
+    ".orchestrator/context_analysis.json",
+    ".orchestrator/plan.json",
+    ".orchestrator/plan_validation.json",
+    ".orchestrator/worker_tasks/backend_producer.json",
+    ".orchestrator/worker_tasks/frontend_producer.json"
+  ],
+  "contracts": [
+    "PuzzleDefinition contract: `lib/puzzles/definitions.ts` exports exactly three `PuzzleDefinition` objects (sequencing, loops, conditionals) with story, goal, constraints, entity/grid coordinates that mirror `design/layout_refs/layout.png` and use `public/assets/...`; both client and server treat this as the single source of puzzle metadata and lock order.",
+    "Session + Attempt contract: `/api/session/start`, `/api/session/end`, `/api/attempts/start`, `/api/attempts/[attemptId]/complete`, and `/api/events/batch` follow the JSON shapes documented in `lib/server/session.ts` and `lib/telemetry/ingest.ts`, guaranteeing user/session creation, attempt lifecycle, telemetry batches (events, movements, code snapshots, hints, outcomes) and transactional persistence.",
+    "Analytics contract: `/api/analytics/summary`, `/api/analytics/puzzle/[puzzleId]`, `/api/analytics/attempts`, and `/api/analytics/movements/[attemptId]` wrap `lib/telemetry/analytics.ts` helpers to return `{ totals, puzzles, recentAttempts }`, puzzle detail aggregates, attempt timelines, and ordered movement payloads that power dashboard cards, detail tables, event streams, and replays."
+  ],
+  "validation_rules": [
+    {
+      "name": "Puzzle definitions file",
+      "kind": "file_exists",
+      "target": "lib/puzzles/definitions.ts",
+      "expectation": "data-driven catalog for three puzzles exists"
+    },
+    {
+      "name": "Failure feedback copy",
+      "kind": "contains_text",
+      "target": "app/play/[puzzleId]/page.tsx",
+      "expectation": "Oops!"
+    },
+    {
+      "name": "Run controls label",
+      "kind": "contains_text",
+      "target": "components/workspace/RunControls.tsx",
+      "expectation": "Play"
+    },
+    {
+      "name": "Analytics route schema",
+      "kind": "route_contract",
+      "target": "app/api/analytics/summary/route.ts",
+      "expectation": "GET returns totals,puzzles,recentAttempts JSON"
+    },
+    {
+      "name": "Telemetry movement persistence",
+      "kind": "contains_text",
+      "target": "lib/telemetry/ingest.ts",
+      "expectation": "INSERT OR REPLACE INTO movements"
+    }
+  ],
+  "build_expectations": [
+    {
+      "name": "Next lint",
+      "command": "npm run lint",
+      "offline_safe": true
+    },
+    {
+      "name": "Next build",
+      "command": "npm run build",
+      "offline_safe": true
+    }
+  ],
+  "runtime_expectations": [
+    {
+      "name": "DB reset script",
+      "command": "node scripts/resetDb.ts",
+      "offline_safe": true
+    },
+    {
+      "name": "Telemetry flow smoke",
+      "command": "node scripts/verifyTelemetryFlow.ts",
+      "offline_safe": true
+    }
+  ],
+  "worker_tasks": [
+    {
+      "role": "Backend Producer",
+      "summary": "Own project configuration, SQLite schema + seeding, session/attempt APIs, telemetry ingestion, analytics endpoints, and verification scripts so telemetry-backed progression works end-to-end.",
+      "owned_paths": [
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        "next.config.mjs",
+        "eslint.config.mjs",
+        "db/migrations/init.sql",
+        "app/api/session/start/route.ts",
+        "app/api/session/end/route.ts",
+        "app/api/attempts/start/route.ts",
+        "app/api/attempts/[attemptId]/complete/route.ts",
+        "app/api/events/batch/route.ts",
+        "app/api/analytics/summary/route.ts",
+        "app/api/analytics/puzzle/[puzzleId]/route.ts",
+        "app/api/analytics/attempts/route.ts",
+        "app/api/analytics/movements/[attemptId]/route.ts",
+        "lib/db/client.ts",
+        "lib/db/migrations.ts",
+        "lib/db/schema.ts",
+        "lib/puzzles/definitions.ts",
+        "lib/puzzles/progression.ts",
+        "lib/puzzles/seed.ts",
+        "lib/telemetry/ingest.ts",
+        "lib/telemetry/analytics.ts",
+        "lib/server/session.ts",
+        "scripts/resetDb.ts",
+        "scripts/verifyTelemetryFlow.ts"
+      ],
+      "required_outputs": [
+        "package.json",
+        "app/api/session/start/route.ts",
+        "app/api/session/end/route.ts",
+        "app/api/attempts/start/route.ts",
+        "app/api/attempts/[attemptId]/complete/route.ts",
+        "app/api/events/batch/route.ts",
+        "app/api/analytics/summary/route.ts",
+        "lib/puzzles/definitions.ts",
+        "lib/puzzles/progression.ts",
+        "scripts/verifyTelemetryFlow.ts"
+      ],
+      "read_only_inputs": [
+        "Project_description.md",
+        "Design_of_project_description.md",
+        "Game_description.md",
+        "design/layout_refs/layout.png",
+        "public/assets/backgrounds/background.jpg",
+        "public/assets/sprites/main_character.png",
+        "public/assets/sprites/place.png",
+        "public/assets/sprites/obstacle.png",
+        "public/assets/sprites/food.png",
+        ".orchestrator/context_analysis.json"
+      ],
+      "forbidden_paths": [
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/puzzles/page.tsx",
+        "app/play/[puzzleId]/page.tsx",
+        "app/analytics/page.tsx",
+        "components/blockly/BlocklyWorkspace.tsx",
+        "components/workspace/RunControls.tsx",
+        "components/scene/GameStage.tsx",
+        "lib/game/compiler.ts",
+        "lib/game/runtime.ts",
+        "lib/client/telemetry.ts"
+      ],
+      "dependencies": [
+        "Architect"
+      ],
+      "contracts": [
+        "Seed the `puzzles` table from `lib/puzzles/definitions.ts` and enforce lock/unlock order plus hint metadata in `lib/puzzles/progression.ts` before issuing session data.",
+        "Session endpoints must create/update `users`, `sessions`, and `puzzle_progress`, returning unlocked puzzle metadata and goal TTS strings for the frontend.",
+        "Telemetry ingestion and analytics routes must record attempts/events/movements atomically (including code snapshots, hint counts, collisions, speeds) and expose summaries/detail queries consumed by analytics UI and verification scripts."
+      ],
+      "validation_rules": [
+        {
+          "name": "Session start handler",
+          "kind": "contains_text",
+          "target": "app/api/session/start/route.ts",
+          "expectation": "export async function POST"
+        },
+        {
+          "name": "Telemetry persistence",
+          "kind": "contains_text",
+          "target": "app/api/events/batch/route.ts",
+          "expectation": "persistTelemetryBatch"
+        },
+        {
+          "name": "Puzzle catalog enriched",
+          "kind": "contains_text",
+          "target": "lib/puzzles/definitions.ts",
+          "expectation": "availableBlocks"
+        },
+        {
+          "name": "Telemetry smoke log",
+          "kind": "contains_text",
+          "target": "scripts/verifyTelemetryFlow.ts",
+          "expectation": "Telemetry flow ok"
+        }
+      ]
+    },
+    {
+      "role": "Frontend Producer",
+      "summary": "Build the landing, level select, puzzle workspace, and analytics pages in the App Router using Blockly for drag-and-drop `On Start` programs, Pixi WebGL scenes for animation/collisions, `Play/Reset/Speed` controls, `Oops!` hints, goal TTS, telemetry emission, and analytics visualization.",
+      "owned_paths": [
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/globals.css",
+        "app/puzzles/page.tsx",
+        "app/play/[puzzleId]/page.tsx",
+        "app/analytics/page.tsx",
+        "components/layout/GameShell.tsx",
+        "components/ui/TopBar.tsx",
+        "components/ui/PrimaryButton.tsx",
+        "components/blockly/BlocklyWorkspace.tsx",
+        "components/workspace/BlockLibrary.tsx",
+        "components/workspace/ActiveCodeArea.tsx",
+        "components/workspace/RunControls.tsx",
+        "components/workspace/FailureFeedback.tsx",
+        "components/workspace/ShowCodePanel.tsx",
+        "components/scene/GameStage.tsx",
+        "components/scene/EntitySprite.tsx",
+        "components/scene/HudOverlay.tsx",
+        "components/analytics/OverviewCards.tsx",
+        "components/analytics/PuzzleBreakdown.tsx",
+        "components/analytics/AttemptTimeline.tsx",
+        "components/analytics/EventStream.tsx",
+        "components/analytics/MovementReplay.tsx",
+        "lib/game/blockTypes.ts",
+        "lib/game/compiler.ts",
+        "lib/game/runtime.ts",
+        "lib/game/state.ts",
+        "lib/game/hints.ts",
+        "lib/game/animation.ts",
+        "lib/game/simulation.ts",
+        "lib/game/webgl.ts",
+        "lib/client/telemetry.ts",
+        "lib/client/session.ts",
+        "lib/client/store.ts"
+      ],
+      "required_outputs": [
+        "app/play/[puzzleId]/page.tsx",
+        "components/blockly/BlocklyWorkspace.tsx",
+        "components/workspace/RunControls.tsx",
+        "components/scene/GameStage.tsx",
+        "lib/game/runtime.ts",
+        "lib/client/telemetry.ts",
+        "app/analytics/page.tsx"
+      ],
+      "read_only_inputs": [
+        "Project_description.md",
+        "design/layout_refs/layout.png",
+        "lib/puzzles/definitions.ts",
+        "public/assets/backgrounds/background.jpg",
+        "public/assets/sprites/main_character.png",
+        "public/assets/sprites/place.png",
+        "public/assets/sprites/obstacle.png",
+        "public/assets/sprites/food.png"
+      ],
+      "forbidden_paths": [
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        "next.config.mjs",
+        "eslint.config.mjs",
+        "db/migrations/init.sql",
+        "app/api/session/start/route.ts",
+        "app/api/session/end/route.ts",
+        "app/api/attempts/start/route.ts",
+        "app/api/attempts/[attemptId]/complete/route.ts",
+        "app/api/events/batch/route.ts",
+        "app/api/analytics/summary/route.ts",
+        "lib/db/client.ts",
+        "lib/db/schema.ts",
+        "scripts/verifyTelemetryFlow.ts"
+      ],
+      "dependencies": [
+        "Architect",
+        "Backend Producer"
+      ],
+      "contracts": [
+        "Render Blockly with a fixed `On Start` root, left command categories (movement, actions, control, logic, sensing), warnings for disconnected blocks, and enforce per-puzzle constraints from `lib/puzzles/definitions.ts`.",
+        "Implement Pixi-based WebGL rendering in `components/scene/GameStage.tsx` + `lib/game/webgl.ts` driven by puzzle grid/entity data, supporting tile movement, facing direction, pickups/treatments, collision highlights, infinite-loop guards, and speed toggle animations matching the pink/violet palette + layout reference.",
+        "Emit telemetry via `lib/client/telemetry.ts` (session start/end, attempt start/complete, run start/end, block edits, movements, collisions, hints) and surface analytics aggregates, puzzle detail, attempt lists, event stream, and movement replay with failure hints + text-to-speech accessibility."
+      ],
+      "validation_rules": [
+        {
+          "name": "Blockly workspace root",
+          "kind": "contains_text",
+          "target": "components/blockly/BlocklyWorkspace.tsx",
+          "expectation": "On Start"
+        },
+        {
+          "name": "Movement replay UI",
+          "kind": "contains_text",
+          "target": "app/analytics/page.tsx",
+          "expectation": "Movement Replay"
+        },
+        {
+          "name": "Pixi stage file",
+          "kind": "file_exists",
+          "target": "components/scene/GameStage.tsx",
+          "expectation": "Pixi-based renderer present"
+        }
+      ]
+    }
+  ]
+}

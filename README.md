@@ -34,6 +34,12 @@ Run the full workflow from the repository root:
 python3 orchestrator.py --project-brief Project_description.md
 ```
 
+Run the Codex self-healing supervisor instead if you want automatic failure capture, Codex-driven repair attempts, and automatic reruns:
+
+```bash
+python3 codex_supervisor.py --project-brief Project_description.md
+```
+
 Run only the preflight stage:
 
 ```bash
@@ -63,6 +69,13 @@ The orchestrator writes runtime state under `.orchestrator/`, including:
 
 Editing workers run in isolated worktrees under `tmp/worktrees/`.
 
+The self-healing supervisor writes its own state under `.self_heal/`, including:
+
+- `attempts.jsonl`
+- `run_logs/*.log`
+- `repair_logs/*.json`
+- `final_report.json`
+
 ## Notes
 
 - The canonical asset directories are created up front:
@@ -71,3 +84,4 @@ Editing workers run in isolated worktrees under `tmp/worktrees/`.
   - `design/layout_refs/`
 - Validation commands are offline-safe and reject install commands such as `npm install` and `npm ci`.
 - The workflow treats [`Project_description.md`](/home/postnl/multi-agent-producer_V0/Project_3_education/Project_description.md) as the canonical brief and does not rely on hidden requirements.
+- The supervisor uses `codex exec` as a bounded repair agent. It captures orchestrator failures, classifies them, limits the editable file set, applies up to a configured number of repair attempts, and reruns automatically.

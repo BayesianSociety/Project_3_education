@@ -53,6 +53,17 @@ Example strategy:
 
 That avoids file collisions.
 
+## Git worktree lifecycle
+
+The orchestrator must make worker worktree management rerun-safe.
+
+Requirements:
+- before creating a worker worktree, run `git worktree prune`
+- if the target worktree path is already registered, remove that registration before re-adding it
+- support the case where a worktree is missing on disk but still registered in git metadata
+- worker teardown must remove the worktree registration and then prune stale metadata
+- rerunning the orchestrator after an interrupted worker must not fail because of stale worktree state
+
 Restrict each agent’s scope. Every worker prompt must state:
 - owned files or owned paths
 - forbidden files
@@ -77,6 +88,21 @@ SUMMARY:
 Bound concurrency. Do not run all agents at once unless there is a clear reason. Use a semaphore or equivalent concurrency limiter so only `N` workers run at the same time. When one finishes, another may start.
 
 Capture structured outputs. Do not rely only on prose. Every worker must return a parseable final section.
+
+## Worker dependency semantics
+
+Worker task `dependencies` must use one of these explicit forms only:
+- role dependencies: execution role names such as `Architect`, `Backend Producer`, `Frontend Producer`
+- artifact dependencies: concrete relative file paths that already exist before worker execution
+- produced artifact dependencies: concrete relative file paths that are owned by exactly one worker task
+
+The orchestrator must resolve dependencies by:
+- treating role dependencies as satisfied when that role has completed
+- treating artifact dependencies as satisfied when the file already exists in the repository or shared state
+- treating produced artifact dependencies as satisfied when the owning worker has completed
+
+The orchestrator must not assume that every dependency entry is a role name.
+If a dependency cannot be mapped to an existing artifact or a unique producing worker, planner validation must fail before worker execution.
 
 Separate roles:
 - explorers for read-only analysis
@@ -249,6 +275,32 @@ The planner must avoid:
 - Validation rules must declare what kind of check they require.
 - Planner fields consumed by the orchestrator must be narrow, typed, and repairable.
 
+## Codex output-schema compatibility
+
+All JSON Schemas used with `codex exec --output-schema` must be compatible with Codex response-format validation requirements.
+
+Rules:
+- every property schema must declare an explicit `"type"`
+- fields using `"const"` must also declare the matching `"type"`
+- boolean fields must use `"type": "boolean"`
+- string constants must use `"type": "string"`
+- object fields must use `"type": "object"`
+- array fields must use `"type": "array"`
+
+Examples of acceptable fields:
+
+```json
+{"type": "string", "const": "Project_description.md"}
+```
+
+```json
+{"type": "boolean", "const": true}
+```
+
+The generated orchestrator must not rely on generic JSON Schema assumptions when Codex `--output-schema` imposes stricter compatibility requirements.
+
+Before the first real role execution that depends on schema-constrained output, the orchestrator must validate that its generated schemas are accepted by `codex exec --output-schema` using a minimal probe call and fail early with the exact schema validation message if a schema is rejected.
+
 If planner validation fails, the orchestrator must reject the plan before worker execution and return a targeted repair message that points to the exact offending field.
 
 # Communication and shared-state rules
@@ -295,6 +347,9 @@ Run every role step through one Codex execution path that:
 - captures the final worker message
 - tracks usage
 - enforces timeouts
+- surfaces structured error payloads from `codex exec`, including JSON event errors and API validation failures
+
+Generic stderr banners such as `Reading prompt from stdin...` must not be treated as the primary failure reason when structured JSON error events contain the actual cause.
 
 ## Filesystem control layer
 
@@ -304,6 +359,16 @@ For each step:
 - diff created, modified, and deleted files
 - enforce a per-step allowlist
 - allow some inputs to be frozen
+
+## Worktree-aware filesystem policy
+
+Filesystem policy enforcement must be scoped to approved paths only.
+
+Rules:
+- a fresh worker worktree must not be interpreted as deleting files that exist only in the parent workspace
+- deletion checks must apply only to files within the worker's allowed scope
+- required outputs must be validated against the worker's declared owned paths and explicit required outputs, not against unrelated repository files
+- policy checks must compare changes within the worker execution scope rather than treating missing unrelated files as deletions
 
 Each agent step must only be allowed to create or modify approved files. It must not delete files unless deletion has been explicitly allowed by policy.
 
@@ -435,5 +500,3 @@ The final generated multi-agent workflow must:
 - provide final readme.md file with instructions on how to start the application
 
 The final design should be explicit, typed, phase-based, and production-oriented. Avoid vague heuristics. Avoid duplicate role definitions. Avoid late discovery of environment, contract, build, or runtime failures.
-
-

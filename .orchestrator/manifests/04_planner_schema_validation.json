@@ -1,0 +1,182 @@
+{
+  "stage_index": 4,
+  "stage_name": "Planner schema validation",
+  "note": "Planner validation complete",
+  "generated_at": "2026-03-22T20:40:54.997008+00:00",
+  "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
+  "snapshot_sha256": "35296f2ebbd82254a6dfa25327dc639fa781fec8b2b58439f9078d881d4604e4",
+  "files": {
+    "Project_description.md": {
+      "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
+      "size": 16250
+    },
+    "README.md": {
+      "sha256": "b43a3001e56243ca1f8bc4d5e60cceef38ec86faea5637d342496f17c784dd43",
+      "size": 2459
+    },
+    "04.README.md": {
+      "sha256": "43b44a9acc569d1b4efb53c315702d4313136a280033459f6fb00b6337afca21",
+      "size": 22
+    },
+    "Design_of_project_description.md": {
+      "sha256": "8377121284625c061eb54674e662a3795f0a3ce6798c578bb38d0377c1cd9357",
+      "size": 6157
+    },
+    "Game_description.md": {
+      "sha256": "092183da1f225f807645c36b24c4dc0b569c0db3aefa9aec7837cef3e031b169",
+      "size": 18665
+    },
+    "03.Errors_selfheal_wrapper.md": {
+      "sha256": "3a53a1967bc0fed8a71007c2bb436406d987d4aa6c2e653654c43fe68f1fb506",
+      "size": 5987
+    },
+    "Prompt_V3.md": {
+      "sha256": "c654e544d9d45a997750698eeb464e93a718076debeb8342a13fa5088639205e",
+      "size": 19165
+    },
+    ".tmp_schema_test.json": {
+      "sha256": "69e99f7f8143372c3c39d7162482cd247881374201baac2e215b883efc32de55",
+      "size": 109
+    },
+    "05.Use.md": {
+      "sha256": "462de6f23035b865ade0cc87ac306e16f614bbd6722b7882ba73edd5e14d65c1",
+      "size": 133
+    },
+    "orchestrator.py": {
+      "sha256": "14a1fb50bcabe6600b900ee911f982f737c00a300572eb92e3fb61a7f4abedd6",
+      "size": 53808
+    },
+    "scripts/resetDb.ts": {
+      "sha256": "c3e7e19bc694d5ebf6d9c646c6298e8cb184e067b17e1ea4a0fd962d236969f1",
+      "size": 464
+    },
+    "db/migrations/init.sql": {
+      "sha256": "f24e3878e234ed98c1174e6be3db9dd599e8c298ab01102927ab7c3ff775ca2f",
+      "size": 2236
+    },
+    "lib/telemetry/analytics.ts": {
+      "sha256": "65911d20290cc31e1434cd265ae56884a65a262e37d68a204d63d8f6ad39a24f",
+      "size": 4557
+    },
+    "lib/telemetry/ingest.ts": {
+      "sha256": "409096cb5445413975de4e118b2b64b59b0363c20350902867daead125a35cb5",
+      "size": 1878
+    },
+    "lib/db/client.ts": {
+      "sha256": "07717e77271c63c7b9699259d4a7452c89bb7b19e4196bdbcc7c4625a634b7c3",
+      "size": 1534
+    },
+    "lib/db/migrations.ts": {
+      "sha256": "01bee2e06939a72c8decc488f6af0642edfa3bff447d81456b985ce394c2bedb",
+      "size": 321
+    },
+    "lib/db/schema.ts": {
+      "sha256": "539a1961161aad0a1241ee2c038f21d3177bfcd0e875fd38028c6188feac55fb",
+      "size": 2762
+    },
+    "app/api/analytics/summary/route.ts": {
+      "sha256": "9e3b96cb98bdc755189d96db3307c3499dfa97fc5b52b73624ab5ade0fbebc46",
+      "size": 620
+    },
+    "app/api/events/batch/route.ts": {
+      "sha256": "8658076cb79c1f851896b2f05cbd5eb79059d8c4bed95adbb06fe36ceb7ee017",
+      "size": 3238
+    },
+    ".orchestrator/context_analysis.json": {
+      "sha256": "6430360f04a5a5b19c8136f3d4691131a6e6a533af4e39e66dda7e533223ff1e",
+      "size": 4858
+    },
+    ".orchestrator/plan.json": {
+      "sha256": "9199a6a6abc43ba8801fb30aa67bea6ca2bef8cdcbab0bd6f844c4b4f7f5e84e",
+      "size": 12609
+    },
+    ".orchestrator/runtime_config.json": {
+      "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
+      "size": 532
+    },
+    ".orchestrator/plan_validation.json": {
+      "sha256": "8a417fd53b887e3462a2eabc67c079e8fe4bf03881ab2db61a67840ca0e9e835",
+      "size": 146
+    },
+    ".orchestrator/decision_log.jsonl": {
+      "sha256": "eeaeea252f04038dc0036aca0d539273cc1defdfb07640e04672671bbcab2f45",
+      "size": 6316
+    },
+    ".orchestrator/worker_tasks/backend_producer.json": {
+      "sha256": "034b1a4985cfa49e3c0c91b0fc57d24c28d8e298d6def1a61e19fb270417a622",
+      "size": 2921
+    },
+    ".orchestrator/worker_tasks/frontend_producer.json": {
+      "sha256": "4abfb9ba9e483f06f0314c6c497686fa4592eb85c2e99b551c62dad3f43c9bc0",
+      "size": 3426
+    },
+    ".orchestrator/manifests/05_planner_repair_loop_if_needed.json": {
+      "sha256": "a65364cab69943bfff50fb7fcd562f704af03f744ef37cfdf6ffab25e135e770",
+      "size": 11707
+    },
+    ".orchestrator/manifests/02_context_analysis.json": {
+      "sha256": "69c611b017e3ade1aa452cc2b99ceed4a4c10cfd25617f3aa251fc4b7fe5a6bb",
+      "size": 13786
+    },
+    ".orchestrator/manifests/03_planner_generation.json": {
+      "sha256": "a5eaa4b8a389f09d007a56e49c991ae964c8eb44d32cd5ba459b929d4de96ed4",
+      "size": 6876
+    },
+    ".orchestrator/manifests/01_environment_preflight.json": {
+      "sha256": "c406b8ffdb67cbc6e527a600fecc50dc00b19aad018cade9066e559f4e8a3e90",
+      "size": 13614
+    },
+    ".orchestrator/manifests/04_planner_schema_validation.json": {
+      "sha256": "017f2d1bba615d20ec6c7fa8b23104a7fbd3d91d36b4f5d82df0ba7afeee4613",
+      "size": 11696
+    },
+    ".orchestrator/reports/environment_preflight.json": {
+      "sha256": "6413dcd539a738966c6e99c8bd9ae5fdd4eed0b8e03c43b293fe7cfa02adbe6f",
+      "size": 573
+    },
+    ".orchestrator/schemas/context_analysis.json": {
+      "sha256": "e88fdcf0cdda3b0c6e40a93c97c2ca62af9c9e321a79b250eb147d5f577c03fa",
+      "size": 1667
+    },
+    ".orchestrator/schemas/plan.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    ".orchestrator/schemas/plan_repair.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    ".orchestrator/schemas/backend_producer_result.json": {
+      "sha256": "345f1242dea573e348f17ba9634f417fd8c1ec09a9f2ff63b1b8aba52d987d33",
+      "size": 579
+    },
+    ".orchestrator/schemas/frontend_producer_result.json": {
+      "sha256": "345f1242dea573e348f17ba9634f417fd8c1ec09a9f2ff63b1b8aba52d987d33",
+      "size": 579
+    },
+    "public/assets/sprites/obstacle.png": {
+      "sha256": "f30145007f8fe82dbf4332fe3c773fe9ee9d384dc18e36c3af4c56fefe6d03bc",
+      "size": 690
+    },
+    "public/assets/sprites/main_character.png": {
+      "sha256": "4b5ace207b9656b51a39b788dbc5ef9c95f50d4f4ce8ad98db9edb958413a460",
+      "size": 6899
+    },
+    "public/assets/sprites/food.png": {
+      "sha256": "6fd4817c5aeff9e4b2785e9a120b7dc721b1191b284cb9828494868e8c55bd96",
+      "size": 12503
+    },
+    "public/assets/sprites/place.png": {
+      "sha256": "ae7f8f9ff243fbb1c571a30b8af665224d93da8a986025c66ecc9ebb5275dfa3",
+      "size": 7777
+    },
+    "public/assets/backgrounds/background.jpg": {
+      "sha256": "4febec01f56cdb1df55bee6341293aa25a3d895c497768bc0220d4b883a7cac4",
+      "size": 586164
+    },
+    "design/layout_refs/layout.png": {
+      "sha256": "f6b4d8065330c0342893d85b0c6689be5cfb9f8b2b1c1a60c584c461683c1b03",
+      "size": 1073447
+    }
+  }
+}

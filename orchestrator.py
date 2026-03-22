@@ -313,6 +313,7 @@ async def run_codex(prompt: str, *, cwd: Path, schema_path: Optional[Path] = Non
     final_text = ""
     usage: Dict[str, Any] = {}
     events_seen = 0
+    error_messages: List[str] = []
     stderr_chunks: List[str] = []
 
     async def consume_stdout() -> None:
@@ -332,6 +333,9 @@ async def run_codex(prompt: str, *, cwd: Path, schema_path: Optional[Path] = Non
                 final_text = item.get("text", "")
             elif event.get("type") == "turn.completed":
                 usage = event.get("usage") or {}
+            elif event.get("type") in {"error", "turn.failed"}:
+                message = event.get("message") or event.get("error", {}).get("message") or decoded
+                error_messages.append(str(message).strip())
 
     async def consume_stderr() -> None:
         assert proc.stderr is not None
@@ -354,7 +358,8 @@ async def run_codex(prompt: str, *, cwd: Path, schema_path: Optional[Path] = Non
     await asyncio.gather(*tasks, return_exceptions=True)
     stderr_text = "".join(stderr_chunks)
     if returncode != 0:
-        raise RuntimeError(f"codex exec failed ({returncode}): {stderr_text.strip()}")
+        details = " | ".join(part for part in [stderr_text.strip(), " || ".join(error_messages).strip()] if part)
+        raise RuntimeError(f"codex exec failed ({returncode}): {details}")
 
     return CodexRunResult(
         final_text=final_text,
@@ -406,7 +411,7 @@ def context_analysis_schema() -> Dict[str, Any]:
             "assumptions",
         ],
         "properties": {
-            "project_brief_path": {"const": "Project_description.md"},
+            "project_brief_path": {"type": "string", "const": "Project_description.md"},
             "domain": narrow_string_schema(10),
             "constraints": {"type": "array", "items": narrow_string_schema(3), "minItems": 5},
             "success_criteria": {"type": "array", "items": narrow_string_schema(3), "minItems": 5},
@@ -481,7 +486,7 @@ def plan_schema() -> Dict[str, Any]:
         ],
         "properties": {
             "task_summary": narrow_string_schema(10),
-            "project_brief_path": {"const": "Project_description.md"},
+            "project_brief_path": {"type": "string", "const": "Project_description.md"},
             "stages": {"type": "array", "items": narrow_string_schema(3), "minItems": 10, "maxItems": 10},
             "roles": {"type": "array", "items": narrow_string_schema(3), "minItems": 6, "maxItems": 6},
             "shared_artifacts": {"type": "array", "items": narrow_string_schema(3), "minItems": 4},
@@ -511,7 +516,7 @@ def plan_schema() -> Dict[str, Any]:
                     "properties": {
                         "name": narrow_string_schema(3),
                         "command": narrow_string_schema(3),
-                        "offline_safe": {"const": True},
+                        "offline_safe": {"type": "boolean", "const": True},
                     },
                 },
             },
@@ -525,7 +530,7 @@ def plan_schema() -> Dict[str, Any]:
                     "properties": {
                         "name": narrow_string_schema(3),
                         "command": narrow_string_schema(3),
-                        "offline_safe": {"const": True},
+                        "offline_safe": {"type": "boolean", "const": True},
                     },
                 },
             },
@@ -837,19 +842,25 @@ def worker_result_schema() -> Dict[str, Any]:
 
 
 async def ensure_git_worktree(path: Path) -> None:
+    await run_command(["git", "worktree", "prune"], cwd=ROOT, timeout=120)
     if path.exists():
         shutil.rmtree(path)
-    rc, _, stderr = await run_command(["git", "worktree", "add", "--detach", str(path), "HEAD"], cwd=ROOT, timeout=120)
+    rc, _, stderr = await run_command(["git", "worktree", "remove", "--force", str(path)], cwd=ROOT, timeout=120)
+    if rc != 0 and "is not a working tree" not in stderr and "is a main working tree" not in stderr:
+        raise RuntimeError(f"Failed to clear existing git worktree registration at {path}: {stderr}")
+    rc, _, stderr = await run_command(["git", "worktree", "add", "--detach", "--force", str(path), "HEAD"], cwd=ROOT, timeout=120)
     if rc != 0:
         raise RuntimeError(f"Failed to create git worktree at {path}: {stderr}")
 
 
 async def remove_git_worktree(path: Path) -> None:
-    if not path.exists():
-        return
+    await run_command(["git", "worktree", "prune"], cwd=ROOT, timeout=120)
     rc, _, stderr = await run_command(["git", "worktree", "remove", "--force", str(path)], cwd=ROOT, timeout=120)
-    if rc != 0:
+    if path.exists():
+        shutil.rmtree(path)
+    if rc != 0 and "is not a working tree" not in stderr:
         raise RuntimeError(f"Failed to remove git worktree {path}: {stderr}")
+    await run_command(["git", "worktree", "prune"], cwd=ROOT, timeout=120)
 
 
 def copy_selected_paths(source_root: Path, dest_root: Path, paths: Iterable[str]) -> List[str]:
@@ -1081,6 +1092,26 @@ async def run_worker_task(
     raise RuntimeError(f"Worker {role} ended unexpectedly")
 
 
+def build_dependency_owner_map(plan_payload: Dict[str, Any]) -> Dict[str, str]:
+    owners: Dict[str, str] = {}
+    for task in plan_payload.get("worker_tasks", []):
+        role = task["role"]
+        for path in task.get("owned_paths", []):
+            owners.setdefault(path, role)
+        for path in task.get("required_outputs", []):
+            owners.setdefault(path, role)
+    return owners
+
+
+def dependency_is_satisfied(dependency: str, completed_roles: set[str], dependency_owner_map: Dict[str, str]) -> bool:
+    if dependency in completed_roles:
+        return True
+    owner = dependency_owner_map.get(dependency)
+    if owner:
+        return owner in completed_roles
+    return (ROOT / dependency).exists()
+
+
 async def stage_worker_generation(project_brief: str, context_payload: Dict[str, Any], plan_payload: Dict[str, Any], max_concurrency: int) -> List[WorkerResult]:
     log_step("Stage 6/10: Worker generation")
     for task in plan_payload["worker_tasks"]:
@@ -1090,15 +1121,22 @@ async def stage_worker_generation(project_brief: str, context_payload: Dict[str,
     semaphore = asyncio.Semaphore(max_concurrency)
     pending = {task["role"]: task for task in plan_payload["worker_tasks"]}
     completed_roles = {"Architect"}
+    dependency_owner_map = build_dependency_owner_map(plan_payload)
     results: List[WorkerResult] = []
 
     while pending:
         ready = [
             task for task in pending.values()
-            if set(task.get("dependencies", [])).issubset(completed_roles)
+            if all(dependency_is_satisfied(dep, completed_roles, dependency_owner_map) for dep in task.get("dependencies", []))
         ]
         if not ready:
-            unresolved = {role: task.get("dependencies", []) for role, task in pending.items()}
+            unresolved = {
+                role: [
+                    dep for dep in task.get("dependencies", [])
+                    if not dependency_is_satisfied(dep, completed_roles, dependency_owner_map)
+                ]
+                for role, task in pending.items()
+            }
             raise RuntimeError(f"Worker dependency deadlock: {unresolved}")
         batch = ready[:max_concurrency]
         batch_results = await asyncio.gather(

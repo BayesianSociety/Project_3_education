@@ -1,0 +1,103 @@
+{
+  "role": "Backend Producer",
+  "summary": "Own project configuration, SQLite schema + seeding, session/attempt APIs, telemetry ingestion, analytics endpoints, and verification scripts so telemetry-backed progression works end-to-end.",
+  "owned_paths": [
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "next.config.mjs",
+    "eslint.config.mjs",
+    "db/migrations/init.sql",
+    "app/api/session/start/route.ts",
+    "app/api/session/end/route.ts",
+    "app/api/attempts/start/route.ts",
+    "app/api/attempts/[attemptId]/complete/route.ts",
+    "app/api/events/batch/route.ts",
+    "app/api/analytics/summary/route.ts",
+    "app/api/analytics/puzzle/[puzzleId]/route.ts",
+    "app/api/analytics/attempts/route.ts",
+    "app/api/analytics/movements/[attemptId]/route.ts",
+    "lib/db/client.ts",
+    "lib/db/migrations.ts",
+    "lib/db/schema.ts",
+    "lib/puzzles/definitions.ts",
+    "lib/puzzles/progression.ts",
+    "lib/puzzles/seed.ts",
+    "lib/telemetry/ingest.ts",
+    "lib/telemetry/analytics.ts",
+    "lib/server/session.ts",
+    "scripts/resetDb.ts",
+    "scripts/verifyTelemetryFlow.ts"
+  ],
+  "required_outputs": [
+    "package.json",
+    "app/api/session/start/route.ts",
+    "app/api/session/end/route.ts",
+    "app/api/attempts/start/route.ts",
+    "app/api/attempts/[attemptId]/complete/route.ts",
+    "app/api/events/batch/route.ts",
+    "app/api/analytics/summary/route.ts",
+    "lib/puzzles/definitions.ts",
+    "lib/puzzles/progression.ts",
+    "scripts/verifyTelemetryFlow.ts"
+  ],
+  "read_only_inputs": [
+    "Project_description.md",
+    "Design_of_project_description.md",
+    "Game_description.md",
+    "design/layout_refs/layout.png",
+    "public/assets/backgrounds/background.jpg",
+    "public/assets/sprites/main_character.png",
+    "public/assets/sprites/place.png",
+    "public/assets/sprites/obstacle.png",
+    "public/assets/sprites/food.png",
+    ".orchestrator/context_analysis.json"
+  ],
+  "forbidden_paths": [
+    "app/layout.tsx",
+    "app/page.tsx",
+    "app/puzzles/page.tsx",
+    "app/play/[puzzleId]/page.tsx",
+    "app/analytics/page.tsx",
+    "components/blockly/BlocklyWorkspace.tsx",
+    "components/workspace/RunControls.tsx",
+    "components/scene/GameStage.tsx",
+    "lib/game/compiler.ts",
+    "lib/game/runtime.ts",
+    "lib/client/telemetry.ts"
+  ],
+  "dependencies": [
+    "Architect"
+  ],
+  "contracts": [
+    "Seed the `puzzles` table from `lib/puzzles/definitions.ts` and enforce lock/unlock order plus hint metadata in `lib/puzzles/progression.ts` before issuing session data.",
+    "Session endpoints must create/update `users`, `sessions`, and `puzzle_progress`, returning unlocked puzzle metadata and goal TTS strings for the frontend.",
+    "Telemetry ingestion and analytics routes must record attempts/events/movements atomically (including code snapshots, hint counts, collisions, speeds) and expose summaries/detail queries consumed by analytics UI and verification scripts."
+  ],
+  "validation_rules": [
+    {
+      "name": "Session start handler",
+      "kind": "contains_text",
+      "target": "app/api/session/start/route.ts",
+      "expectation": "export async function POST"
+    },
+    {
+      "name": "Telemetry persistence",
+      "kind": "contains_text",
+      "target": "app/api/events/batch/route.ts",
+      "expectation": "persistTelemetryBatch"
+    },
+    {
+      "name": "Puzzle catalog enriched",
+      "kind": "contains_text",
+      "target": "lib/puzzles/definitions.ts",
+      "expectation": "availableBlocks"
+    },
+    {
+      "name": "Telemetry smoke log",
+      "kind": "contains_text",
+      "target": "scripts/verifyTelemetryFlow.ts",
+      "expectation": "Telemetry flow ok"
+    }
+  ]
+}

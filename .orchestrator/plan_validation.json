@@ -1,0 +1,10 @@
+{
+  "status": "valid",
+  "details": {
+    "status": "valid",
+    "worker_roles": [
+      "Backend Producer",
+      "Frontend Producer"
+    ]
+  }
+}

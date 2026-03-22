@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "final_status",
+    "changed_files",
+    "summary",
+    "blockers"
+  ],
+  "properties": {
+    "final_status": {
+      "enum": [
+        "completed",
+        "blocked"
+      ]
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 3
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    }
+  }
+}

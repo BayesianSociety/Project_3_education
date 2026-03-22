@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "versions": {
+    "codex": "codex-cli 0.115.0",
+    "git": "git version 2.34.1",
+    "python3": "Python 3.10.12",
+    "node": "v24.11.0",
+    "npm": "11.6.1"
+  },
+  "worktree_list": [
+    "/home/postnl/multi-agent-producer_V0/Project_3_education                                  e1e4670 [feature/orchestrator]",
+    "/home/postnl/multi-agent-producer_V0/Project_3_education/tmp/worktrees/frontend_producer  e1e4670 (detached HEAD)"
+  ],
+  "asset_dirs": [
+    "public/assets/backgrounds",
+    "public/assets/sprites",
+    "design/layout_refs"
+  ]
+}
