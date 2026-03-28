@@ -1,0 +1,13 @@
+[1;95mStage 1/10: Environment preflight[0m
+[1;95mStage 2/10: Context analysis[0m
+[1;95mStage 3/10: Planner generation[0m
+[1;95mStage 4/10: Planner schema validation[0m
+[1;95mStage 5/10: Planner repair loop if needed[0m
+[1;95mStage 6/10: Worker generation[0m
+[1;95mWorker launch: Backend Producer (attempt 1)[0m
+[1;95mWorker launch: Frontend Producer (attempt 1)[0m
+[1;95mStage 7/10: Artifact validation[0m
+[1;95mStage 8/10: Build validation[0m
+[1;95mStage 9/10: Runtime validation[0m
+[1;95mStage 10/10: Final acceptance summary[0m
+[1;95mWorkflow completed successfully[0m

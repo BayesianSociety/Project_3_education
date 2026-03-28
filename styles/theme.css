@@ -1,0 +1,48 @@
+:root {
+  --color-berry-50: #fff2fb;
+  --color-berry-100: #ffd6f1;
+  --color-berry-200: #ffb3e5;
+  --color-berry-300: #ff84d1;
+  --color-berry-400: #f154c0;
+  --color-berry-500: #d333a7;
+  --color-berry-600: #aa2685;
+  --color-berry-700: #821b66;
+  --color-berry-800: #5b1246;
+  --color-berry-900: #340925;
+
+  --color-lilac-50: #f3edff;
+  --color-lilac-100: #e0d4ff;
+  --color-lilac-200: #c1aaff;
+  --color-lilac-300: #a083ff;
+  --color-lilac-400: #7f5dff;
+  --color-lilac-500: #5b37ec;
+  --color-lilac-600: #4429b5;
+  --color-lilac-700: #311d83;
+  --color-lilac-800: #1f1252;
+  --color-lilac-900: #120b30;
+
+  --color-cream-50: #fff9f2;
+  --color-cream-100: #ffe9d6;
+  --color-cream-200: #ffd3ac;
+  --color-cream-300: #ffbb80;
+  --color-cream-400: #ffa158;
+  --color-cream-500: #f68534;
+
+  --color-mint-200: #c7fff3;
+  --color-mint-400: #5cf2d2;
+  --color-mint-600: #10c4a1;
+
+  --color-ink: #1b1024;
+  --color-ink-soft: rgba(27, 16, 36, 0.72);
+  --color-cloud: rgba(255, 255, 255, 0.92);
+
+  --radius-lg: 32px;
+  --radius-md: 20px;
+  --radius-sm: 12px;
+
+  --shadow-soft: 0 10px 45px rgba(90, 18, 62, 0.25);
+  --shadow-hard: 0 18px 60px rgba(37, 7, 51, 0.35);
+
+  --font-display: 'Space Grotesk', 'Baloo 2', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', 'Nunito Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}

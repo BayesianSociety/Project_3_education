@@ -53,6 +53,17 @@ Example strategy:
 
 That avoids file collisions.
 
+## Git worktree lifecycle
+
+The orchestrator must make worker worktree management rerun-safe.
+
+Requirements:
+- before creating a worker worktree, run `git worktree prune`
+- if the target worktree path is already registered, remove that registration before re-adding it
+- support the case where a worktree is missing on disk but still registered in git metadata
+- worker teardown must remove the worktree registration and then prune stale metadata
+- rerunning the orchestrator after an interrupted worker must not fail because of stale worktree state
+
 Restrict each agent’s scope. Every worker prompt must state:
 - owned files or owned paths
 - forbidden files
@@ -77,6 +88,21 @@ SUMMARY:
 Bound concurrency. Do not run all agents at once unless there is a clear reason. Use a semaphore or equivalent concurrency limiter so only `N` workers run at the same time. When one finishes, another may start.
 
 Capture structured outputs. Do not rely only on prose. Every worker must return a parseable final section.
+
+## Worker dependency semantics
+
+Worker task `dependencies` must use one of these explicit forms only:
+- role dependencies: execution role names such as `Architect`, `Backend Producer`, `Frontend Producer`
+- artifact dependencies: concrete relative file paths that already exist before worker execution
+- produced artifact dependencies: concrete relative file paths that are owned by exactly one worker task
+
+The orchestrator must resolve dependencies by:
+- treating role dependencies as satisfied when that role has completed
+- treating artifact dependencies as satisfied when the file already exists in the repository or shared state
+- treating produced artifact dependencies as satisfied when the owning worker has completed
+
+The orchestrator must not assume that every dependency entry is a role name.
+If a dependency cannot be mapped to an existing artifact or a unique producing worker, planner validation must fail before worker execution.
 
 Separate roles:
 - explorers for read-only analysis
@@ -177,6 +203,8 @@ The workflow must be phase-based and fail early. It should contain these stages 
 9. Runtime validation
 10. Final acceptance summary
 
+The orchestrator must persist explicit stage checkpoints so it can resume conservatively after a repair instead of always restarting from Stage 1.
+
 The practical flow is:
 - Context Analyst -> structured requirements
 - Orchestrator -> task plan and dependency graph
@@ -219,6 +247,8 @@ The plan should include at least:
 Validation expectations must not require package installation or network access.
 Do not use commands such as `npm install`, `npm ci`, `pnpm install`, `yarn install`, or `bun install` in build or runtime expectations.
 Prefer offline-safe checks that operate on repository state, and when JavaScript dependencies are not guaranteed to exist locally, prefer artifact-based validation over `npm run ...` commands.
+Do not emit directory placeholders such as `app` or `scripts` in any path field that is later consumed as a file path.
+Do not emit `npm run ...`, `pnpm ...`, `yarn ...`, `bun ...`, or `node path/to/file.ts` as build or runtime expectations unless the repository already contains the local runtime dependencies needed to execute them offline.
 
 The plan must not output vague sentences in fields that are later consumed as structured inputs.
 This is bad:
@@ -245,9 +275,39 @@ The planner must avoid:
 
 - Every `owned_path` must be a concrete relative file path.
 - Every `required_output` must be a concrete relative file path.
+- Every `shared_artifact` and every plan-level `contract` must be a concrete relative file path.
+- Path fields must not contain leading or trailing whitespace.
+- Path fields must not use `./` prefixes.
 - No prose deliverable may appear in a path field.
 - Validation rules must declare what kind of check they require.
+- Validation-rule targets must be concrete relative file paths unless the rule kind explicitly expects a shell command.
 - Planner fields consumed by the orchestrator must be narrow, typed, and repairable.
+
+## Codex output-schema compatibility
+
+All JSON Schemas used with `codex exec --output-schema` must be compatible with Codex response-format validation requirements.
+
+Rules:
+- every property schema must declare an explicit `"type"`
+- fields using `"const"` must also declare the matching `"type"`
+- boolean fields must use `"type": "boolean"`
+- string constants must use `"type": "string"`
+- object fields must use `"type": "object"`
+- array fields must use `"type": "array"`
+
+Examples of acceptable fields:
+
+```json
+{"type": "string", "const": "Project_description.md"}
+```
+
+```json
+{"type": "boolean", "const": true}
+```
+
+The generated orchestrator must not rely on generic JSON Schema assumptions when Codex `--output-schema` imposes stricter compatibility requirements.
+
+Before the first real role execution that depends on schema-constrained output, the orchestrator must validate that its generated schemas are accepted by `codex exec --output-schema` using a minimal probe call and fail early with the exact schema validation message if a schema is rejected.
 
 If planner validation fails, the orchestrator must reject the plan before worker execution and return a targeted repair message that points to the exact offending field.
 
@@ -286,6 +346,7 @@ Define up front:
 - workspace root
 - timeout policy
 - canonical output locations
+- checkpoint location for resumable stage state
 
 ## Execution engine
 
@@ -295,6 +356,9 @@ Run every role step through one Codex execution path that:
 - captures the final worker message
 - tracks usage
 - enforces timeouts
+- surfaces structured error payloads from `codex exec`, including JSON event errors and API validation failures
+
+Generic stderr banners such as `Reading prompt from stdin...` must not be treated as the primary failure reason when structured JSON error events contain the actual cause.
 
 ## Filesystem control layer
 
@@ -305,7 +369,36 @@ For each step:
 - enforce a per-step allowlist
 - allow some inputs to be frozen
 
+## Worktree-aware filesystem policy
+
+Filesystem policy enforcement must be scoped to approved paths only.
+
+Rules:
+- a fresh worker worktree must not be interpreted as deleting files that exist only in the parent workspace
+- deletion checks must apply only to files within the worker's allowed scope
+- required outputs must be validated against the worker's declared owned paths and explicit required outputs, not against unrelated repository files
+- policy checks must compare changes within the worker execution scope rather than treating missing unrelated files as deletions
+
 Each agent step must only be allowed to create or modify approved files. It must not delete files unless deletion has been explicitly allowed by policy.
+
+## Checkpoints and resume
+
+The orchestrator must support conservative resume after repair.
+
+Requirements:
+- persist a checkpoint record after each completed stage
+- each checkpoint must record the stage name, timestamp, required artifact paths, and project brief hash
+- the orchestrator must support a CLI option to resume from a chosen stage
+- resume must verify that all prior required checkpoints and artifacts still exist before skipping earlier stages
+- resume must reload durable stage artifacts such as context analysis, plan, validation reports, and worker results instead of recomputing them
+- if a repair changes files that could invalidate earlier stages, the supervisor or orchestrator must restart from the earliest invalidated stage instead of resuming too late
+- resume behavior must be conservative; when validity is uncertain, restart from an earlier stage
+
+Acceptable conservative resume examples:
+- after a worker-scope code repair, resume from `Worker generation`
+- after an artifact/build/runtime validation fix, resume from `Artifact validation` or earlier
+- after planner or schema logic changes, resume from `Planner generation` or earlier
+- after context-ingestion logic changes, resume from `Context analysis` or Stage 1
 
 ## Manifest and provenance
 
@@ -321,6 +414,14 @@ Validators must prefer:
 - structural checks
 - normalized contract checks
 - artifact-aware evidence collection
+
+Verification-agent findings must be machine-usable.
+Each finding must include:
+- severity
+- message
+- concrete source file paths actually inspected while producing that finding
+
+Do not return speculative findings without file-level evidence.
 
 ## Artifact coverage
 
@@ -352,6 +453,32 @@ The system must also be able to detect real route composition bugs such as dupli
 ## Documentation and QA validation
 
 Documentation and test-plan checks must be semantic, not dependent on one exact human-facing heading. Equivalent section titles must be accepted when they clearly express the same intent.
+
+## Verification repair loop
+
+Artifact validation must not be terminal on the first failed verification pass when findings can be mapped back to owned worker files.
+
+Requirements:
+- when the Verification Agent reports failed findings with concrete source files, the orchestrator must map those findings back to the owning worker or workers
+- the orchestrator must launch a bounded targeted repair loop for the impacted workers
+- worker repair prompts must include the exact validator findings and cited source files
+- after targeted repairs, the orchestrator must rerun artifact validation before proceeding
+- if findings cannot be mapped to owned files or the bounded repair loop is exhausted, only then may the orchestrator fail the run
+- the orchestrator must normalize validator evidence paths before ownership lookup by stripping line and column suffixes such as `:12`, `:12:4`, or `#L12`
+- shared brief references such as `Project_description.md` may appear as supporting evidence, but they must not prevent routing a finding when other cited files map to owned worker paths
+- if targeted worker repair passes are exhausted but unresolved findings still remain, the orchestrator must perform one bounded whole-repository artifact-repair escalation pass before failing the run
+- this escalation pass may analyze backend and frontend files together, but it must still enforce a typed output schema and a concrete editable-file allowlist
+
+The validator must remain strict, but the pipeline must support targeted recovery from validator findings instead of treating Stage 7 as immediately terminal.
+
+## Validator evidence paths
+
+When the Verification Agent returns `source_files` used for downstream repair routing:
+
+- each `source_files` entry must be a plain existing relative file path
+- do not include line numbers or fragments inside `source_files`
+- if line-level evidence is important, include it in the finding message instead
+- downstream routing logic must still defensively normalize `source_files` before ownership mapping in case a validator returns annotated paths
 
 # Framework-aware validation
 
@@ -435,5 +562,3 @@ The final generated multi-agent workflow must:
 - provide final readme.md file with instructions on how to start the application
 
 The final design should be explicit, typed, phase-based, and production-oriented. Avoid vague heuristics. Avoid duplicate role definitions. Avoid late discovery of environment, contract, build, or runtime failures.
-
-

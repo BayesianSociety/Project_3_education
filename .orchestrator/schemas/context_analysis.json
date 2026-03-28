@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_brief_path",
+    "domain",
+    "constraints",
+    "success_criteria",
+    "expected_outputs",
+    "stack_requirements",
+    "validation_expectations",
+    "repo_constraints",
+    "missing_information",
+    "assumptions"
+  ],
+  "properties": {
+    "project_brief_path": {
+      "type": "string",
+      "const": "Project_description.md"
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 10
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 5
+    },
+    "success_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 5
+    },
+    "expected_outputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 5
+    },
+    "stack_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 3
+    },
+    "validation_expectations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 4
+    },
+    "repo_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      },
+      "minItems": 1
+    },
+    "missing_information": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    }
+  }
+}

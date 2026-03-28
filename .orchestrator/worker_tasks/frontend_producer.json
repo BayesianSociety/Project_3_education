@@ -1,0 +1,138 @@
+{
+  "role": "Frontend Producer",
+  "summary": "Build the landing, puzzle map, gameplay UI with block editor + WebGL scene, failure feedback, accessibility, analytics dashboard, and replay visualizations.",
+  "owned_paths": [
+    "app/layout.tsx",
+    "app/page.tsx",
+    "app/puzzles/page.tsx",
+    "app/puzzles/[puzzleId]/page.tsx",
+    "app/analytics/page.tsx",
+    "components/layout/TopBar.tsx",
+    "components/layout/PuzzleProgress.tsx",
+    "components/blockly/Workspace.tsx",
+    "components/blockly/Palette.tsx",
+    "components/blockly/CodeWarning.tsx",
+    "components/game/SceneCanvas.tsx",
+    "components/game/RunControls.tsx",
+    "components/game/HintPanel.tsx",
+    "components/game/ShowCodePanel.tsx",
+    "components/game/SpeedToggle.tsx",
+    "components/game/TextToSpeechToggle.tsx",
+    "components/analytics/Dashboard.tsx",
+    "components/analytics/EventStream.tsx",
+    "components/analytics/MovementReplay.tsx",
+    "components/analytics/ReplaysList.tsx",
+    "hooks/useBlocklyWorkspace.ts",
+    "hooks/useTelemetryBuffer.ts",
+    "hooks/useAccessibility.ts",
+    "lib/game/runtime.ts",
+    "lib/game/world.ts",
+    "lib/game/replay.ts",
+    "lib/webgl/renderer.ts",
+    "lib/webgl/shaders.ts",
+    "lib/blockly/definitions.ts",
+    "lib/blockly/theme.ts",
+    "lib/blockly/serialization.ts",
+    "lib/ui/colors.ts",
+    "styles/globals.css",
+    "styles/theme.css"
+  ],
+  "required_outputs": [
+    "app/puzzles/[puzzleId]/page.tsx",
+    "components/blockly/Workspace.tsx",
+    "components/game/SceneCanvas.tsx",
+    "components/game/HintPanel.tsx",
+    "components/analytics/Dashboard.tsx",
+    "styles/globals.css"
+  ],
+  "read_only_inputs": [
+    "Project_description.md",
+    "design/layout_refs/layout.png",
+    "public/assets/backgrounds/background.jpg",
+    "public/assets/sprites/main_character.png",
+    "public/assets/sprites/place.png",
+    "public/assets/sprites/obstacle.png",
+    "public/assets/sprites/food.png",
+    "package.json",
+    "tsconfig.json",
+    "next.config.mjs",
+    ".eslintrc.cjs",
+    "lib/db/sqlite.ts",
+    "lib/db/schema.ts",
+    "lib/telemetry/ingest.ts",
+    "lib/telemetry/analytics.ts",
+    "lib/telemetry/types.ts",
+    "lib/puzzles/data.ts",
+    "types/telemetry.ts",
+    "app/api/session/start/route.ts",
+    "app/api/events/batch/route.ts",
+    "app/api/analytics/replay/[attemptId]/route.ts",
+    "scripts/migrate.ts",
+    "scripts/telemetry_smoke.ts"
+  ],
+  "forbidden_paths": [
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json",
+    "next.config.mjs",
+    ".eslintrc.cjs",
+    "lib/db/sqlite.ts",
+    "lib/db/schema.ts",
+    "lib/db/migrations.ts",
+    "lib/telemetry/ingest.ts",
+    "lib/telemetry/analytics.ts",
+    "lib/telemetry/types.ts",
+    "lib/puzzles/data.ts",
+    "types/telemetry.ts",
+    "app/api/session/start/route.ts",
+    "app/api/session/end/route.ts",
+    "app/api/events/batch/route.ts",
+    "app/api/analytics/summary/route.ts",
+    "app/api/analytics/puzzle/[puzzleId]/route.ts",
+    "app/api/analytics/replay/[attemptId]/route.ts",
+    "scripts/migrate.ts",
+    "scripts/seed_demo_data.ts",
+    "scripts/telemetry_smoke.ts"
+  ],
+  "dependencies": [
+    "Architect",
+    "Backend Producer"
+  ],
+  "contracts": [
+    "Deliver the drag-and-drop block workspace with fixed On Start root, category palette, Show Code toggle, disconnected-block warning, and speed controls.",
+    "Implement polished WebGL scene rendering that uses provided sprites/background to match the layout guide, animates runs, minimizes the workspace during play, and surfaces Oops! hints for failure reasons.",
+    "Build landing/map/analytics views with accessible controls, keyboard navigation, text-to-speech for goals, aggregates, event streams, and movement replay visualizations consuming backend APIs."
+  ],
+  "validation_rules": [
+    {
+      "name": "Puzzle page exists",
+      "kind": "file_exists",
+      "target": "app/puzzles/[puzzleId]/page.tsx",
+      "expectation": "gameplay route rendered in Next.js app router"
+    },
+    {
+      "name": "Hint panel says Oops",
+      "kind": "contains_text",
+      "target": "components/game/HintPanel.tsx",
+      "expectation": "renders \"Oops!\" plus contextual hint text"
+    },
+    {
+      "name": "Workspace anchors On Start",
+      "kind": "contains_text",
+      "target": "components/blockly/Workspace.tsx",
+      "expectation": "ensures fixed On Start root node and category palette"
+    },
+    {
+      "name": "WebGL renderer initialized",
+      "kind": "contains_text",
+      "target": "components/game/SceneCanvas.tsx",
+      "expectation": "creates a WebGLRenderingContext/WebGPU fallback for 2D scene"
+    },
+    {
+      "name": "Movement replay draws path",
+      "kind": "contains_text",
+      "target": "components/analytics/MovementReplay.tsx",
+      "expectation": "visualizes stored movement coordinates from telemetry data"
+    }
+  ]
+}

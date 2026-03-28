@@ -1,0 +1,61 @@
+{
+  "project_brief_path": "Project_description.md",
+  "domain": "Browser-based educational block-coding puzzle game with telemetry-backed analytics",
+  "constraints": [
+    "Frontend and backend implemented in Next.js 16.x with TypeScript.",
+    "Node v24.11.0 and npm 11.6.1 compatible dependencies only.",
+    "Persistence via SQLite using better-sqlite3; DB auto-creates on first run.",
+    "Block editor anchored by `On Start` root with left command library (movement, actions, control/loops, logic/conditionals, sensing) and right active code area; disconnected block warning required.",
+    "Run controls (`Play`, `Reset`, speed toggle) must be highly visible with no dark colors; workspace minimizes during execution.",
+    "Failure feedback must show `Oops!` plus hint covering reasons (target not reached, wrong item, wrong order, obstacle collision, missing condition).",
+    "Workspace assets use provided sprites/backgrounds/layout; align puzzle scenes with `design/layout_refs/layout.png` guidance.",
+    "Rendering must be polished cartoon WebGL-based 2D with shades of pink/violet, high contrast, clear actors/items/goals, and cohesive UI styling.",
+    "Block editor must be drag-and-drop (custom or heavily styled Blockly).",
+    "Telemetry must capture all gameplay/UI events including every movement and block execution step via HTTP APIs to backend."
+  ],
+  "success_criteria": [
+    "Exactly 3 progression-linked puzzles covering sequencing, loops, and conditionals.",
+    "`Play` executes connected blocks, animates scene, and uses stored puzzle data; `Reset` restores state.",
+    "Incorrect solutions trigger `Oops!` plus contextual hint.",
+    "SQLite stores `users`, `sessions`, `puzzles`, `attempts`, `events`, `movements`, `puzzle_progress` with telemetry rows for runs and movement steps.",
+    "Analytics dashboard reads SQLite data, shows aggregates, puzzle detail, event streams, and can replay movement paths.",
+    "Telem APIs expose `POST /api/session/start`, `POST /api/session/end`, `POST /api/events/batch`, `GET /api/analytics/*`.",
+    "Show Code toggle renders read-only text version of current program.",
+    "Accessibility: keyboard navigation for main controls, adequate contrast, no color-only signals, optional text-to-speech for goal text."
+  ],
+  "expected_outputs": [
+    "Complete Next.js app (frontend gameplay UI, backend APIs).",
+    "Puzzle data definitions enabling data-driven scenes (id, title, story, goal, scene id, grid, entities, blocks, constraints, success criteria, hints).",
+    "SQLite schema/init logic for telemetry tables.",
+    "Telemetry ingestion and analytics/replay pages.",
+    "Game assets arranged per provided layout reference and reusable scene composition."
+  ],
+  "stack_requirements": [
+    "Next.js 16.x with TypeScript for both UI and server routes.",
+    "Node v24.11.0 runtime, npm 11.6.1 toolchain.",
+    "better-sqlite3 for SQLite access.",
+    "Drag-and-drop block system (custom or styled Blockly) integrated into Next.js frontend.",
+    "WebGL-capable 2D rendering for polished animation."
+  ],
+  "validation_expectations": [
+    "Run/build checks for Next.js project.",
+    "Verify automatic SQLite initialization on first launch.",
+    "Test telemetry flow: session start/end, event batching, attempts, movement logging, code snapshots.",
+    "Confirm analytics endpoints/pages can read stored data and replay runs.",
+    "Exercise puzzles to ensure progression, failure feedback, and `Oops!` hints operate.",
+    "Ensure accessibility features (keyboard controls, contrast, text-to-speech) work."
+  ],
+  "repo_constraints": [
+    "Use local assets in `public/assets/...` and layout reference in `design/layout_refs/layout.png`.",
+    "Front/back code plus data must live within repository; no external services or proprietary brands.",
+    "Art/style must remain original yet aligned with provided assets/layout."
+  ],
+  "missing_information": [
+    "Exact puzzle narratives, goals, and block configurations beyond provided layout guidance.",
+    "Specific analytics metrics/visualization layouts beyond aggregates/detail/event stream/replay."
+  ],
+  "assumptions": [
+    "Later levels extrapolate layout reference while maintaining asset ordering and spacing logic.",
+    "Placeholder assets maintain sizing/anchors if replacements arrive later."
+  ]
+}

@@ -1,0 +1,290 @@
+/* [project]/multi-agent-producer_V0/Project_3_education/styles/theme.css [app-client] (css) */
+:root {
+  --color-berry-50: #fff2fb;
+  --color-berry-100: #ffd6f1;
+  --color-berry-200: #ffb3e5;
+  --color-berry-300: #ff84d1;
+  --color-berry-400: #f154c0;
+  --color-berry-500: #d333a7;
+  --color-berry-600: #aa2685;
+  --color-berry-700: #821b66;
+  --color-berry-800: #5b1246;
+  --color-berry-900: #340925;
+  --color-lilac-50: #f3edff;
+  --color-lilac-100: #e0d4ff;
+  --color-lilac-200: #c1aaff;
+  --color-lilac-300: #a083ff;
+  --color-lilac-400: #7f5dff;
+  --color-lilac-500: #5b37ec;
+  --color-lilac-600: #4429b5;
+  --color-lilac-700: #311d83;
+  --color-lilac-800: #1f1252;
+  --color-lilac-900: #120b30;
+  --color-cream-50: #fff9f2;
+  --color-cream-100: #ffe9d6;
+  --color-cream-200: #ffd3ac;
+  --color-cream-300: #ffbb80;
+  --color-cream-400: #ffa158;
+  --color-cream-500: #f68534;
+  --color-mint-200: #c7fff3;
+  --color-mint-400: #5cf2d2;
+  --color-mint-600: #10c4a1;
+  --color-ink: #1b1024;
+  --color-ink-soft: #1b1024b8;
+  --color-cloud: #ffffffeb;
+  --radius-lg: 32px;
+  --radius-md: 20px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 10px 45px #5a123e40;
+  --shadow-hard: 0 18px 60px #25073359;
+  --font-display: "Space Grotesk", "Baloo 2", "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: "Inter", "Nunito Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* [project]/multi-agent-producer_V0/Project_3_education/styles/globals.css [app-client] (css) */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: radial-gradient(circle at 10% 20%, #ffd6f1a6, #0000 55%), radial-gradient(circle at 90% 20%, #c3b2ff8c, #0000 60%), linear-gradient(#200732 0%, #130222 35%, #1b072e 100%);
+  min-height: 100vh;
+  margin: 0;
+}
+
+html, body {
+  scroll-behavior: smooth;
+  background-color: #130222;
+}
+
+main {
+  min-height: calc(100vh - 80px);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-mint-400);
+  outline-offset: 2px;
+}
+
+.page-shell {
+  width: min(1200px, 94vw);
+  margin: 0 auto;
+  padding: 32px 0 96px;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, var(--color-berry-400), var(--color-lilac-400));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
+  color: #fff;
+  padding: 56px;
+}
+
+.hero-card h1 {
+  font-family: var(--font-display);
+  margin-bottom: 16px;
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+}
+
+.hero-card p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.cta-row {
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+  display: flex;
+}
+
+.cta-button {
+  background: var(--color-cream-400);
+  color: var(--color-ink);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  box-shadow: var(--shadow-soft);
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.cta-button.secondary {
+  color: #fff;
+  background: none;
+  border: 2px solid #fff6;
+}
+
+.cta-button:disabled, .cta-button[aria-disabled="true"] {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.cta-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 48px;
+  display: grid;
+}
+
+.card {
+  color: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background: #ffffff1a;
+  border: 1px solid #ffffff26;
+  padding: 24px;
+}
+
+.badge {
+  background: #fff3;
+  border-radius: 999px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: .85rem;
+  font-weight: 600;
+  display: inline-flex;
+}
+
+.progress-track {
+  align-items: center;
+  gap: 10px;
+  display: flex;
+}
+
+.progress-step {
+  width: 32px;
+  height: 32px;
+  color: var(--color-ink);
+  background: var(--color-berry-100);
+  border: 2px solid #0000;
+  border-radius: 50%;
+  place-items: center;
+  font-size: .9rem;
+  font-weight: 700;
+  transition: transform .2s;
+  display: grid;
+}
+
+.progress-step--active {
+  background: var(--color-mint-200);
+  border-color: var(--color-mint-600);
+  transform: translateY(-3px);
+}
+
+.progress-step--complete {
+  background: var(--color-cream-300);
+  border-color: var(--color-cream-500);
+}
+
+.map-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+  margin-top: 40px;
+  display: grid;
+}
+
+.map-card {
+  color: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  background: #150824e6;
+  border: 1px solid #ffffff1f;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  display: flex;
+}
+
+.map-card.locked {
+  opacity: .55;
+}
+
+.map-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+
+.map-card footer {
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  display: flex;
+}
+
+.map-card footer span {
+  color: var(--color-mint-200);
+  font-weight: 700;
+}
+
+.tablet-panel {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  background: #ffffff1f;
+  border: 1px solid #fff3;
+  padding: 24px;
+}
+
+.text-muted {
+  color: #ffffffb8;
+}
+
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  position: absolute;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .hero-card {
+    padding: 36px;
+  }
+
+  .page-shell {
+    width: min(100%, 94vw);
+    padding-top: 16px;
+  }
+}
+
+.blocklySvg {
+  background: radial-gradient(circle at 30% 20%, #ff84d126, #0000 50%), #12041f;
+  border-radius: 0 0 24px 24px;
+}
+
+.blocklyTreeRow.blocklyTreeSelected {
+  background: #5cf2d22e;
+}
+
+.blocklyFlyoutBackground {
+  fill: #180625;
+  fill-opacity: .92;
+}
+
+/*# sourceMappingURL=multi-agent-producer_V0_Project_3_education_styles_959ce645._.css.map*/

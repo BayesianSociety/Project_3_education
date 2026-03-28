@@ -1,0 +1,134 @@
+{
+  "stage_index": 5,
+  "stage_name": "Planner repair loop if needed",
+  "note": "Planner repair stage accounted for",
+  "generated_at": "2026-03-24T20:58:40.018465+00:00",
+  "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
+  "snapshot_sha256": "099a63d06bc859b1bb2816e17e51e44f3715404fdebb83bc1c1ff6fb2c719ba7",
+  "files": {
+    "Prompt_V3_Codex_Supervisor.md": {
+      "sha256": "b0a5ee19c497c9a8bda57df2aeaf75d9afd0623ef2863ad5eb34b5787f788ac1",
+      "size": 13251
+    },
+    "Project_description.md": {
+      "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
+      "size": 16250
+    },
+    "README.md": {
+      "sha256": "0e6a2854ff08325fb63ccda5bd5bb62afc528750826523d60fc02b28dbb20ea6",
+      "size": 3373
+    },
+    "04.README.md": {
+      "sha256": "43b44a9acc569d1b4efb53c315702d4313136a280033459f6fb00b6337afca21",
+      "size": 22
+    },
+    "Design_of_project_description.md": {
+      "sha256": "8377121284625c061eb54674e662a3795f0a3ce6798c578bb38d0377c1cd9357",
+      "size": 6157
+    },
+    "Game_description.md": {
+      "sha256": "092183da1f225f807645c36b24c4dc0b569c0db3aefa9aec7837cef3e031b169",
+      "size": 18665
+    },
+    "Prompt_V3.md": {
+      "sha256": "7013175f6bdaa5469af1a521e924f2d33511adefbf72ce76e51d50be4a4bca17",
+      "size": 23597
+    },
+    "codex_supervisor.py": {
+      "sha256": "d120c6efcce6f346d42b676cd0c0fba4571bfeb2021a63ae8675d30a3b1c8e7d",
+      "size": 38782
+    },
+    "05.Use.md": {
+      "sha256": "1c6885185e9282d7103c6250189006e96bbef61ee3f34b6ebd11ca9bf6c6d44e",
+      "size": 258
+    },
+    "orchestrator.py": {
+      "sha256": "38b58ffdc02ea9e1db2019ea37c49f7b11a505e6137daaccd3bba41989a1dff4",
+      "size": 76418
+    },
+    ".self_heal/schemas/repair_result.json": {
+      "sha256": "3dd7a0acabaff722227f04f8d5d588951b7ed02e458cb666b24e81f46e193f03",
+      "size": 839
+    },
+    ".orchestrator/context_analysis.json": {
+      "sha256": "604400a555fd930cb739c51dd46d03c8679ad16313678fc30435266e27119f93",
+      "size": 4347
+    },
+    ".orchestrator/plan.json": {
+      "sha256": "1ae64c1a3ed2ea87d95f00076bfd6bb22ff0d1b81a3f5d8fa2ae102d19ddf445",
+      "size": 12735
+    },
+    ".orchestrator/checkpoints.json": {
+      "sha256": "5a52b84027aab9fea0c27f20cd74ff98405edb9b15b3264cdc926ed98836f35f",
+      "size": 1959
+    },
+    ".orchestrator/runtime_config.json": {
+      "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
+      "size": 532
+    },
+    ".orchestrator/plan_validation.json": {
+      "sha256": "30c5b524681b6ad224e215f529091ff689ec797a74b433098362d7995633b8c9",
+      "size": 52
+    },
+    ".orchestrator/decision_log.jsonl": {
+      "sha256": "cf0436acc7d52ccb7c303f7fb4732e4b5b22d9f8d16bc18e50cc94e61ffcd92b",
+      "size": 840
+    },
+    ".orchestrator/manifests/02_context_analysis.json": {
+      "sha256": "1e4d768a9d9bb8e3d4695183c29327f96795d76c26294278eede269dfad84165",
+      "size": 3913
+    },
+    ".orchestrator/manifests/03_planner_generation.json": {
+      "sha256": "2f1c93d8d6f42889067f35f3099f6c4a91ec128a321e0b691813045bea90ad37",
+      "size": 4380
+    },
+    ".orchestrator/manifests/01_environment_preflight.json": {
+      "sha256": "43c5bedec3d250103cad535409f11309095368406a17255a39aef5a5f14e3113",
+      "size": 3283
+    },
+    ".orchestrator/manifests/04_planner_schema_validation.json": {
+      "sha256": "87bf1d02a5cf0ce95e4a36bab08154842c87113429fac88f7b82d7c04ae7a3a4",
+      "size": 4868
+    },
+    ".orchestrator/reports/environment_preflight.json": {
+      "sha256": "d241db0c9b8236c3d21df62b5e8fab30bd9af27b382b949175db0dc1dc3838b1",
+      "size": 418
+    },
+    ".orchestrator/schemas/context_analysis.json": {
+      "sha256": "e88fdcf0cdda3b0c6e40a93c97c2ca62af9c9e321a79b250eb147d5f577c03fa",
+      "size": 1667
+    },
+    ".orchestrator/schemas/plan.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    ".orchestrator/schemas/plan_repair.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    "public/assets/sprites/obstacle.png": {
+      "sha256": "f30145007f8fe82dbf4332fe3c773fe9ee9d384dc18e36c3af4c56fefe6d03bc",
+      "size": 690
+    },
+    "public/assets/sprites/main_character.png": {
+      "sha256": "4b5ace207b9656b51a39b788dbc5ef9c95f50d4f4ce8ad98db9edb958413a460",
+      "size": 6899
+    },
+    "public/assets/sprites/food.png": {
+      "sha256": "6fd4817c5aeff9e4b2785e9a120b7dc721b1191b284cb9828494868e8c55bd96",
+      "size": 12503
+    },
+    "public/assets/sprites/place.png": {
+      "sha256": "ae7f8f9ff243fbb1c571a30b8af665224d93da8a986025c66ecc9ebb5275dfa3",
+      "size": 7777
+    },
+    "public/assets/backgrounds/background.jpg": {
+      "sha256": "4febec01f56cdb1df55bee6341293aa25a3d895c497768bc0220d4b883a7cac4",
+      "size": 586164
+    },
+    "design/layout_refs/layout.png": {
+      "sha256": "f6b4d8065330c0342893d85b0c6689be5cfb9f8b2b1c1a60c584c461683c1b03",
+      "size": 1073447
+    }
+  }
+}

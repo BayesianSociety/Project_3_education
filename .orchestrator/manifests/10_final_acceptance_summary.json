@@ -1,0 +1,410 @@
+{
+  "stage_index": 10,
+  "stage_name": "Final acceptance summary",
+  "note": "Final acceptance summary complete",
+  "generated_at": "2026-03-24T21:22:43.816111+00:00",
+  "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
+  "snapshot_sha256": "a64802d89c61aba6001c83a107813b3baaa0e83538d5bcd369733913e7c1d636",
+  "files": {
+    "package-lock.json": {
+      "sha256": "3b63a72bd0deb42430e82afaa406803afb4b68a4b2451659ad6d1a5a80c96afc",
+      "size": 642
+    },
+    "Prompt_V3_Codex_Supervisor.md": {
+      "sha256": "b0a5ee19c497c9a8bda57df2aeaf75d9afd0623ef2863ad5eb34b5787f788ac1",
+      "size": 13251
+    },
+    ".eslintrc.cjs": {
+      "sha256": "f5b71cd8a3c3c541067c3e44efafb988c96acc1007c8f6eb1dc7db7e1118cce3",
+      "size": 81
+    },
+    "package.json": {
+      "sha256": "d1afabce62488e1940e7ba6bfa5034fe9b6ce1c1c4b0c9e4b776b4596c2126ee",
+      "size": 847
+    },
+    "Project_description.md": {
+      "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
+      "size": 16250
+    },
+    "README.md": {
+      "sha256": "0e6a2854ff08325fb63ccda5bd5bb62afc528750826523d60fc02b28dbb20ea6",
+      "size": 3373
+    },
+    "04.README.md": {
+      "sha256": "43b44a9acc569d1b4efb53c315702d4313136a280033459f6fb00b6337afca21",
+      "size": 22
+    },
+    "Design_of_project_description.md": {
+      "sha256": "8377121284625c061eb54674e662a3795f0a3ce6798c578bb38d0377c1cd9357",
+      "size": 6157
+    },
+    "Game_description.md": {
+      "sha256": "092183da1f225f807645c36b24c4dc0b569c0db3aefa9aec7837cef3e031b169",
+      "size": 18665
+    },
+    "tsconfig.json": {
+      "sha256": "1d14ac2e974437ba1a3290a5b02cdeaf076d579434cf1f639c6800eed9430656",
+      "size": 568
+    },
+    "Prompt_V3.md": {
+      "sha256": "7013175f6bdaa5469af1a521e924f2d33511adefbf72ce76e51d50be4a4bca17",
+      "size": 23597
+    },
+    "codex_supervisor.py": {
+      "sha256": "d120c6efcce6f346d42b676cd0c0fba4571bfeb2021a63ae8675d30a3b1c8e7d",
+      "size": 38782
+    },
+    "next.config.mjs": {
+      "sha256": "032619379bd8ea5a3c8a8f5448026b7885273f61a614783f646079691fed1e5f",
+      "size": 98
+    },
+    "05.Use.md": {
+      "sha256": "1c6885185e9282d7103c6250189006e96bbef61ee3f34b6ebd11ca9bf6c6d44e",
+      "size": 258
+    },
+    "orchestrator.py": {
+      "sha256": "38b58ffdc02ea9e1db2019ea37c49f7b11a505e6137daaccd3bba41989a1dff4",
+      "size": 76418
+    },
+    "types/telemetry.ts": {
+      "sha256": "9c0e29b33325d125f9ae426e3a28a2171fa86d49238cb6bc0105186184290471",
+      "size": 2483
+    },
+    "styles/globals.css": {
+      "sha256": "82d8de1eec1683731e4fee5a7f88b166d41c6e9caeb7fdccd4727d0db44a40e2",
+      "size": 4610
+    },
+    "styles/theme.css": {
+      "sha256": "0c7762f54afddb6d92284b4d0d13dd8927a4acf1a1d75207fb904046ad97cdb5",
+      "size": 1397
+    },
+    ".self_heal/schemas/repair_result.json": {
+      "sha256": "3dd7a0acabaff722227f04f8d5d588951b7ed02e458cb666b24e81f46e193f03",
+      "size": 839
+    },
+    "scripts/migrate.ts": {
+      "sha256": "9a0c2c19a60cacdc3870e8213801e3b71ea1394b69eaff629a6da3a7506f928a",
+      "size": 644
+    },
+    "scripts/seed_demo_data.ts": {
+      "sha256": "be72a05a0f6dbe153b49c08f887340709bac7723af0580778f3ff003db65a85e",
+      "size": 1194
+    },
+    "scripts/telemetry_smoke.ts": {
+      "sha256": "000e22a59f391b565eb0f0b520a3df8f00bf26d47299bc4e1bf5bd327d0d81b6",
+      "size": 2352
+    },
+    "lib/telemetry/analytics.ts": {
+      "sha256": "ca8d9e0549580ffdd77ac32d7c1930c897bebec7fe266a9bed08a917db68846f",
+      "size": 4503
+    },
+    "lib/telemetry/ingest.ts": {
+      "sha256": "e884b3a54a97c7cf1ba8c80b6affcfd784a37fe0f51736b0fcafeea8fcf209a1",
+      "size": 5553
+    },
+    "lib/ui/colors.ts": {
+      "sha256": "9d4c2f1678dbbe5bd410de0d3342d80f4f629cb9c798023a082f5f526ca3b5bc",
+      "size": 817
+    },
+    "lib/webgl/shaders.ts": {
+      "sha256": "218c08e35adb93e9f33e045e9d9868a2cea66d36a1f8865930d5179868706a2b",
+      "size": 639
+    },
+    "lib/webgl/renderer.ts": {
+      "sha256": "d8c517343611a4b9269d2d7a9b012c0606c937270394fa50750f7a57b59bacc3",
+      "size": 6815
+    },
+    "lib/db/migrations.ts": {
+      "sha256": "6790510ff670156c680b37ed024dd12056388761826ae759f22ddc1c90b95138",
+      "size": 1109
+    },
+    "lib/db/sqlite.ts": {
+      "sha256": "20f2316e28059d3125ff25405201433272c72193e91a5c63cd95ad7fd004e2df",
+      "size": 1310
+    },
+    "lib/db/schema.ts": {
+      "sha256": "6abae09bbb721395380b489690c7d361d40fb53ea53b58e5e1a2ab07730e8c72",
+      "size": 3244
+    },
+    "lib/puzzles/data.ts": {
+      "sha256": "f889de908ddd0cf9d665baca73236a9d63d453885da344c12e5b6e378f5c2755",
+      "size": 8076
+    },
+    "lib/blockly/theme.ts": {
+      "sha256": "720e90aeeb80cdf47b045f200ff17791c96d3eeaef800897753385e3676fc075",
+      "size": 1699
+    },
+    "lib/blockly/definitions.ts": {
+      "sha256": "e785939e128a2d01477e3ecf9b72c10b551cecafbdbbfa80fa3eaa13b8aca593",
+      "size": 5169
+    },
+    "lib/blockly/serialization.ts": {
+      "sha256": "a81459a09fffd7c21ae28f2507f348eefbffd61b51c0aff106a1c7d0a59dc014",
+      "size": 5581
+    },
+    "lib/game/runtime.ts": {
+      "sha256": "1c80d86695d8e238632747cf0f99594db7fccceabaa44c62a7072ab98b138d4c",
+      "size": 4984
+    },
+    "lib/game/world.ts": {
+      "sha256": "6f9f6f2b8538819b2b8eb35c620fd2269f09f2f9b575131942a32acc14636d7f",
+      "size": 2634
+    },
+    "lib/game/replay.ts": {
+      "sha256": "e4ae788408728ef591aab47b386c57e5e3674f7db43ce2e3da4751732266442a",
+      "size": 351
+    },
+    "app/layout.tsx": {
+      "sha256": "70ecafb3f23d8f674f42c66739782f8461ead2db33ccdc93426722c8c9d9bd51",
+      "size": 1428
+    },
+    "app/page.tsx": {
+      "sha256": "ba72870d3aa3174976d751c0e1830cbf020cf1be856643651f56ce848fdfd5fe",
+      "size": 3614
+    },
+    "app/analytics/page.tsx": {
+      "sha256": "cf69abdf2ab38d257544c50d875f04947f1ca82cc9e07b75b440126ad60d7319",
+      "size": 1000
+    },
+    "app/puzzles/page.tsx": {
+      "sha256": "05318c6794f5acf654a8c67d22192406dc0411b79ffe64f39260d68f6db4990d",
+      "size": 3534
+    },
+    "app/puzzles/[puzzleId]/page.tsx": {
+      "sha256": "098ecab0dd0d1f67e58f235ff48fcf40aad2ae9dbd630eb2c2a6f0cde236e9dc",
+      "size": 1328
+    },
+    "app/api/analytics/puzzle/[puzzleId]/route.ts": {
+      "sha256": "cdc2b84b379a45dfb2e32619d12aac6c8f50a4dcda6dbb0d994d420a81da2be6",
+      "size": 681
+    },
+    "app/api/analytics/replay/[attemptId]/route.ts": {
+      "sha256": "f10205fb5d58fd173aaf1141aeb1c3d305b031f607c91d4fe674447d0473313f",
+      "size": 679
+    },
+    "app/api/analytics/summary/route.ts": {
+      "sha256": "996b1df5599b372f588d66a3ceac7e5fa2f7128907a0aebe9dfec6191a4ddc53",
+      "size": 480
+    },
+    "app/api/session/start/route.ts": {
+      "sha256": "dbc884fe350bef4d049902bcf1db98d815b3630ec5cb1c5070201cf1adf071d6",
+      "size": 679
+    },
+    "app/api/session/end/route.ts": {
+      "sha256": "f23493c2110dcbb94e3dd892733d8b51a535707f8bdc65caeae92383b6d337a4",
+      "size": 635
+    },
+    "app/api/events/batch/route.ts": {
+      "sha256": "544c1273b0919884a4dd4b5fce51cecb1604dd0b7ed76d3f349e8afd95f3ff21",
+      "size": 730
+    },
+    "hooks/useAccessibility.ts": {
+      "sha256": "0803ca84382fe25b52991300d32513b27c1e5de62f9426b02065c8dd55127c9a",
+      "size": 1469
+    },
+    "hooks/useBlocklyWorkspace.ts": {
+      "sha256": "c822be34e712e890dd0cd3022b8e2bfa52fd0d98d125e65b13d443c7a7b71614",
+      "size": 3932
+    },
+    "hooks/useTelemetryBuffer.ts": {
+      "sha256": "f70439540d9f75357f8d3131d4a83c231ec06017d7f6353e76dcaef328bc94f0",
+      "size": 3678
+    },
+    "components/layout/PuzzleProgress.tsx": {
+      "sha256": "89a651f3974cfb00782260572b5a6bef60b751632e2da2ad544d00a11d37b345",
+      "size": 1124
+    },
+    "components/layout/TopBar.tsx": {
+      "sha256": "f7089ea80a22bfb01cc1907cade58d2f327a038945714b354ad6b4d19c1c97d8",
+      "size": 5265
+    },
+    "components/analytics/ReplaysList.tsx": {
+      "sha256": "79d18c15bfb7517a69b27e9544e62e408c5a426b5a85827a21ee1c3594ff2c7c",
+      "size": 1992
+    },
+    "components/analytics/EventStream.tsx": {
+      "sha256": "321f3a9ba3c15ee7e50b753f6be0518cba9ef8f328288cf83877e0cfc6d12e37",
+      "size": 1528
+    },
+    "components/analytics/Dashboard.tsx": {
+      "sha256": "f5c7be22f725944f3f6a8566eb1adfa6c68ce17e4c25c50cfeae76a378f4b6cb",
+      "size": 9581
+    },
+    "components/analytics/MovementReplay.tsx": {
+      "sha256": "29b0e477cc9bfaf8272045a4d70a733e6bf9c18c2fdb958fe1f164d4c6850bc6",
+      "size": 3278
+    },
+    "components/blockly/CodeWarning.tsx": {
+      "sha256": "d36bb01352df3c386c91fd7ab212909ce675bfbda6f8775be977b30d72dae8d7",
+      "size": 878
+    },
+    "components/blockly/Palette.tsx": {
+      "sha256": "8edfb242ecbb2b6f969a8d072b6481297c781f048deaed0b0be4a9a63fe9ea05",
+      "size": 2272
+    },
+    "components/blockly/Workspace.tsx": {
+      "sha256": "483562096ec0be98183b0ac52d5e02c3658e1c7c0e4f983353adea5d6e8fcf1b",
+      "size": 4093
+    },
+    "components/game/ShowCodePanel.tsx": {
+      "sha256": "4435c6cbdf7c855faf43d36b52c9ea9a39f33cac64b0e08cc45c8a330de2f74a",
+      "size": 1470
+    },
+    "components/game/RunControls.tsx": {
+      "sha256": "88dc268e6968573e724dcdba7395f55aa7fe3a3b8e43761fa1f14aa6aac8930f",
+      "size": 2463
+    },
+    "components/game/TextToSpeechToggle.tsx": {
+      "sha256": "14c6ea36bf007c7025b8811c8119d6643b0aa9b285ec7d2601ec5213c4ef263f",
+      "size": 686
+    },
+    "components/game/HintPanel.tsx": {
+      "sha256": "2ba543ab809c802123e0b751039013dc403ef543f4dc42af7b9042bd315f7d2a",
+      "size": 1309
+    },
+    "components/game/SceneCanvas.tsx": {
+      "sha256": "67f97a836e6308446e00e14f46db4d7758c11447ff768f12292c5607f3b5d5d7",
+      "size": 13400
+    },
+    "components/game/SpeedToggle.tsx": {
+      "sha256": "3a296483fe62d38b61526914e761ad4eabc705ed9148fab53301052a4f341adf",
+      "size": 1196
+    },
+    ".orchestrator/context_analysis.json": {
+      "sha256": "604400a555fd930cb739c51dd46d03c8679ad16313678fc30435266e27119f93",
+      "size": 4347
+    },
+    ".orchestrator/plan.json": {
+      "sha256": "1ae64c1a3ed2ea87d95f00076bfd6bb22ff0d1b81a3f5d8fa2ae102d19ddf445",
+      "size": 12735
+    },
+    ".orchestrator/checkpoints.json": {
+      "sha256": "53e7138661dce192e07e5b2c10f66163e2866d140e6ad46d580677ac3b0c77f6",
+      "size": 4442
+    },
+    ".orchestrator/runtime_config.json": {
+      "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
+      "size": 532
+    },
+    ".orchestrator/plan_validation.json": {
+      "sha256": "30c5b524681b6ad224e215f529091ff689ec797a74b433098362d7995633b8c9",
+      "size": 52
+    },
+    ".orchestrator/decision_log.jsonl": {
+      "sha256": "c27cacc3772ebecbab2c5578971a9d20752c6c0bf2b4a718f4ecffe4d879d4f4",
+      "size": 3395
+    },
+    ".orchestrator/final_acceptance_summary.json": {
+      "sha256": "64131129b3e64fc7f2b0f06fd46e3c4c39403c7cfaa8481c6483ae3dc88892d1",
+      "size": 6219
+    },
+    ".orchestrator/worker_tasks/backend_producer.json": {
+      "sha256": "a6cd734387f3bd4d5e27517606ddca5ed0ed10133f3bdc24f25040f68e9b5675",
+      "size": 4053
+    },
+    ".orchestrator/worker_tasks/frontend_producer.json": {
+      "sha256": "0cfafefb86740698be7c4874b949e85b8de00cb1280399779d7e6c7564a0709f",
+      "size": 4888
+    },
+    ".orchestrator/manifests/06_worker_generation.json": {
+      "sha256": "619cce0e92112d031359c98c0a52b90877b4e398f6c3b50a945e93baebd45cd9",
+      "size": 14020
+    },
+    ".orchestrator/manifests/08_build_validation.json": {
+      "sha256": "f20192d81ed5b641606318212941016a9a8ca7fb39e39f6bf06cdab2a085b9db",
+      "size": 14688
+    },
+    ".orchestrator/manifests/05_planner_repair_loop_if_needed.json": {
+      "sha256": "9dc006208f270b4c87969e8a0a605685c5f82f22990f6441aa9465b8cf31a331",
+      "size": 5056
+    },
+    ".orchestrator/manifests/09_runtime_validation.json": {
+      "sha256": "555ca9cca4cdf0f6c2452d7e31d56537153314fc380010cc5031707c814c1d4f",
+      "size": 15026
+    },
+    ".orchestrator/manifests/07_artifact_validation.json": {
+      "sha256": "1fb169ad8a2d768eff867ec966c82fb58123f3c87c35c1196a97b78bd06d3370",
+      "size": 14359
+    },
+    ".orchestrator/manifests/02_context_analysis.json": {
+      "sha256": "1e4d768a9d9bb8e3d4695183c29327f96795d76c26294278eede269dfad84165",
+      "size": 3913
+    },
+    ".orchestrator/manifests/03_planner_generation.json": {
+      "sha256": "2f1c93d8d6f42889067f35f3099f6c4a91ec128a321e0b691813045bea90ad37",
+      "size": 4380
+    },
+    ".orchestrator/manifests/01_environment_preflight.json": {
+      "sha256": "43c5bedec3d250103cad535409f11309095368406a17255a39aef5a5f14e3113",
+      "size": 3283
+    },
+    ".orchestrator/manifests/04_planner_schema_validation.json": {
+      "sha256": "87bf1d02a5cf0ce95e4a36bab08154842c87113429fac88f7b82d7c04ae7a3a4",
+      "size": 4868
+    },
+    ".orchestrator/reports/artifact_validation.json": {
+      "sha256": "8f9880a7f6291372da0162b55f91454be59cef923538e0cd663eb3cae70ee4c4",
+      "size": 251
+    },
+    ".orchestrator/reports/environment_preflight.json": {
+      "sha256": "d241db0c9b8236c3d21df62b5e8fab30bd9af27b382b949175db0dc1dc3838b1",
+      "size": 418
+    },
+    ".orchestrator/reports/runtime_validation.json": {
+      "sha256": "ec98efefbb631d195d3e0082eb449e0cadc4370545b8eaa5309812e2f436baf4",
+      "size": 2570
+    },
+    ".orchestrator/reports/build_validation.json": {
+      "sha256": "384808666d54a1afc5b3b131caa8ce478f68b6f0c6edea942e61f5af2746f4ed",
+      "size": 1901
+    },
+    ".orchestrator/reports/worker_results.json": {
+      "sha256": "b79e856e3c9b56ff536bb5e8cc981563e0a839dccecdf4a7dfa3db48645d7b03",
+      "size": 3824
+    },
+    ".orchestrator/schemas/context_analysis.json": {
+      "sha256": "e88fdcf0cdda3b0c6e40a93c97c2ca62af9c9e321a79b250eb147d5f577c03fa",
+      "size": 1667
+    },
+    ".orchestrator/schemas/plan.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    ".orchestrator/schemas/plan_repair.json": {
+      "sha256": "9b433a7eec7a47b1f0effde9e1cfb6fd97beffb1680ec1431ed7cdaefc71b76a",
+      "size": 6047
+    },
+    ".orchestrator/schemas/backend_producer_result.json": {
+      "sha256": "345f1242dea573e348f17ba9634f417fd8c1ec09a9f2ff63b1b8aba52d987d33",
+      "size": 579
+    },
+    ".orchestrator/schemas/frontend_producer_result.json": {
+      "sha256": "345f1242dea573e348f17ba9634f417fd8c1ec09a9f2ff63b1b8aba52d987d33",
+      "size": 579
+    },
+    "public/assets/sprites/obstacle.png": {
+      "sha256": "f30145007f8fe82dbf4332fe3c773fe9ee9d384dc18e36c3af4c56fefe6d03bc",
+      "size": 690
+    },
+    "public/assets/sprites/main_character.png": {
+      "sha256": "4b5ace207b9656b51a39b788dbc5ef9c95f50d4f4ce8ad98db9edb958413a460",
+      "size": 6899
+    },
+    "public/assets/sprites/food.png": {
+      "sha256": "6fd4817c5aeff9e4b2785e9a120b7dc721b1191b284cb9828494868e8c55bd96",
+      "size": 12503
+    },
+    "public/assets/sprites/place.png": {
+      "sha256": "ae7f8f9ff243fbb1c571a30b8af665224d93da8a986025c66ecc9ebb5275dfa3",
+      "size": 7777
+    },
+    "public/assets/backgrounds/background.jpg": {
+      "sha256": "4febec01f56cdb1df55bee6341293aa25a3d895c497768bc0220d4b883a7cac4",
+      "size": 586164
+    },
+    "design/layout_refs/layout.png": {
+      "sha256": "f6b4d8065330c0342893d85b0c6689be5cfb9f8b2b1c1a60c584c461683c1b03",
+      "size": 1073447
+    }
+  }
+}
