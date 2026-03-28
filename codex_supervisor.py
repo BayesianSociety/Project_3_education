@@ -34,6 +34,10 @@ FINAL_REPORT_JSON = SELF_HEAL_DIR / "final_report.json"
 DECISION_LOG = ROOT / ".orchestrator" / "decision_log.jsonl"
 PLAN_JSON = ROOT / ".orchestrator" / "plan.json"
 CHECKPOINTS_JSON = ROOT / ".orchestrator" / "checkpoints.json"
+REPORTS_DIR = ROOT / ".orchestrator" / "reports"
+ARTIFACT_VALIDATION_JSON = REPORTS_DIR / "artifact_validation.json"
+BUILD_VALIDATION_JSON = REPORTS_DIR / "build_validation.json"
+RUNTIME_VALIDATION_JSON = REPORTS_DIR / "runtime_validation.json"
 PROMPT_V3 = ROOT / "Prompt_V3.md"
 README_MD = ROOT / "README.md"
 
@@ -46,6 +50,7 @@ APPROVAL_POLICY = os.getenv("CODEX_APPROVAL_POLICY", "never")
 CODEX_TIMEOUT_SECONDS = int(os.getenv("CODEX_TIMEOUT_SECONDS", "1800"))
 RUN_TIMEOUT_SECONDS = int(os.getenv("SUPERVISOR_RUN_TIMEOUT_SECONDS", "3600"))
 MAX_LOG_CHARS = 12000
+VERBOSE = False
 
 EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".next", ".venv", ".orchestrator", ".self_heal", "tmp"}
 
@@ -74,6 +79,8 @@ class FailureDiagnosis:
     summary: str
     hints: List[str] = field(default_factory=list)
     suspected_files: List[str] = field(default_factory=list)
+    report_path: str = ""
+    report_excerpt: str = ""
 
 
 def utc_now() -> str:
@@ -82,6 +89,18 @@ def utc_now() -> str:
 
 def log_step(message: str) -> None:
     print(f"{PINK_BOLD}{message}{RESET}", flush=True)
+
+
+def log_verbose(message: str) -> None:
+    if VERBOSE:
+        log_step(message)
+
+
+def log_json(title: str, payload: Any, limit: int = 4000) -> None:
+    if not VERBOSE:
+        return
+    rendered = json.dumps(payload, indent=2, ensure_ascii=True, default=str)
+    log_step(f"{title}:\n{tail_text(rendered, limit)}")
 
 
 def write_text(path: Path, text: str) -> None:
@@ -132,6 +151,10 @@ def diff_snapshots(before: Dict[str, str], after: Dict[str, str]) -> List[str]:
         if before.get(rel) != after.get(rel):
             changed.add(rel)
     return sorted(changed)
+
+
+def repo_editable_files() -> List[str]:
+    return sorted(str(path.relative_to(ROOT)) for path in iter_workspace_files(ROOT))
 
 
 def build_orchestrator_command(args: argparse.Namespace) -> List[str]:
@@ -224,6 +247,158 @@ def run_capture(command: Sequence[str]) -> str:
     return proc.stdout.strip()
 
 
+def load_json_file(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def report_path_for_classifier(classifier: str) -> Optional[Path]:
+    if classifier == "artifact_validation":
+        return ARTIFACT_VALIDATION_JSON
+    if classifier == "build_validation":
+        return BUILD_VALIDATION_JSON
+    if classifier == "runtime_validation":
+        return RUNTIME_VALIDATION_JSON
+    return None
+
+
+def extract_paths_from_text(text: str) -> List[str]:
+    candidates: Set[str] = set()
+    for match in re.findall(r"`([^`\n]+?\.[A-Za-z0-9]+)(?::\d+(?::\d+)?)?`", text):
+        if "/" in match:
+            candidates.add(match.strip())
+    for match in re.findall(r"([A-Za-z0-9_./()\-\[\]]+\.[A-Za-z0-9]+)(?::\d+(?::\d+)?)?", text):
+        if "/" in match and not match.startswith("./"):
+            candidates.add(match.strip())
+    return sorted(candidates)
+
+
+def normalize_source_path(value: str) -> str:
+    normalized = str(value).strip().strip("`")
+    normalized = re.sub(r"#L\d+(?:C\d+)?$", "", normalized)
+    candidate = re.sub(r":\d+(?::\d+)?$", "", normalized)
+    return candidate.strip()
+
+
+def build_plan_owner_map(plan: Dict[str, Any]) -> Dict[str, str]:
+    owners: Dict[str, str] = {}
+    for task in plan.get("worker_tasks", []):
+        role = str(task.get("role", "")).strip()
+        for field in ("owned_paths", "contracts", "required_outputs"):
+            for item in task.get(field, []):
+                if isinstance(item, str) and item.strip():
+                    owners.setdefault(item, role)
+    return owners
+
+
+def detect_artifact_source_path_normalization_bug(report: Dict[str, Any]) -> bool:
+    plan_payload = load_plan_payload()
+    owner_map = build_plan_owner_map(plan_payload)
+    findings = report.get("agent_report", {}).get("findings", [])
+    annotated_hits = 0
+    normalized_owner_hits = 0
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        for item in finding.get("source_files", []):
+            if not isinstance(item, str) or not item.strip():
+                continue
+            normalized = normalize_source_path(item)
+            if normalized != item:
+                annotated_hits += 1
+            if normalized in owner_map:
+                normalized_owner_hits += 1
+    return annotated_hits > 0 and normalized_owner_hits > 0
+
+
+def summarize_validation_report(classifier: str, report: Dict[str, Any]) -> FailureDiagnosis:
+    diagnosis = FailureDiagnosis(classifier=classifier, summary=f"Failure class: {classifier}")
+    report_path = report_path_for_classifier(classifier)
+    if report_path:
+        diagnosis.report_path = str(report_path.relative_to(ROOT))
+    known_plan_paths = load_plan_paths()
+
+    if classifier == "artifact_validation":
+        local_report = report.get("local_report", {})
+        agent_report = report.get("agent_report", {})
+        summary = str(agent_report.get("summary") or "").strip()
+        if summary:
+            diagnosis.summary = summary
+        findings = agent_report.get("findings", [])
+        hints: List[str] = []
+        suspected_files: Set[str] = set(agent_report.get("checked_files", []))
+        plan_payload = load_plan_payload()
+        owner_map = build_plan_owner_map(plan_payload)
+        normalized_owned_hits = 0
+        annotated_source_hits = 0
+        for finding in findings[:6]:
+            if not isinstance(finding, dict):
+                continue
+            message = str(finding.get("message") or "").strip()
+            source_files = finding.get("source_files", [])
+            if message:
+                hints.append(message)
+                suspected_files.update(extract_paths_from_text(message))
+            if isinstance(source_files, list):
+                for item in source_files:
+                    if not isinstance(item, str) or not item.strip():
+                        continue
+                    suspected_files.add(item)
+                    normalized = normalize_source_path(item)
+                    if normalized and normalized != item:
+                        annotated_source_hits += 1
+                    if normalized in owner_map:
+                        normalized_owned_hits += 1
+                    if normalized:
+                        suspected_files.add(normalized)
+        missing = local_report.get("missing", [])
+        if isinstance(missing, list) and missing:
+            hints.extend(f"Missing required artifact: {item}" for item in missing[:6] if isinstance(item, str))
+            suspected_files.update(str(item) for item in missing if isinstance(item, str))
+        if annotated_source_hits and normalized_owned_hits:
+            diagnosis.classifier = "artifact_validation_source_path_normalization_bug"
+            diagnosis.summary = (
+                "Artifact validation findings cite worker-owned files with line-annotated source paths, "
+                "so Stage 7 ownership routing likely needs source-path normalization before repair mapping."
+            )
+            hints.insert(0, "Normalize validator source_files by stripping :line, :line:column, and #Lline suffixes before matching them to worker ownership.")
+            hints.insert(1, "Repair the orchestrator's Stage 7 finding-to-owner routing before attempting broader app-level fixes.")
+        diagnosis.hints = hints
+        normalized_suspected: Set[str] = set()
+        for path in suspected_files:
+            if not isinstance(path, str):
+                continue
+            normalized = normalize_source_path(path)
+            if not normalized:
+                continue
+            if (ROOT / normalized).exists() or normalized in known_plan_paths:
+                normalized_suspected.add(normalized)
+        diagnosis.suspected_files = sorted(normalized_suspected)
+        diagnosis.report_excerpt = json.dumps(
+            {
+                "local_report": local_report,
+                "agent_report": {
+                    "status": agent_report.get("status"),
+                    "summary": agent_report.get("summary"),
+                    "checked_files": agent_report.get("checked_files", []),
+                    "findings": findings[:6],
+                },
+            },
+            indent=2,
+        )
+        return diagnosis
+
+    if report:
+        diagnosis.summary = f"{classifier} failed; inspect persisted validation report."
+        diagnosis.report_excerpt = json.dumps(report, indent=2)[:6000]
+    return diagnosis
+
+
 def load_plan_paths() -> Set[str]:
     paths: Set[str] = set()
     if not PLAN_JSON.exists():
@@ -267,7 +442,59 @@ def find_owner_for_path(plan_payload: Dict[str, Any], rel_path: str) -> Optional
 
 
 def diagnose_failure(classifier: str, output: str) -> FailureDiagnosis:
+    report_path = report_path_for_classifier(classifier)
+    if report_path and report_path.exists():
+        report = load_json_file(report_path)
+        report_diagnosis = summarize_validation_report(classifier, report)
+        if (
+            classifier == "artifact_validation"
+            and "no mappable owning worker" in output.lower()
+        ):
+            report_diagnosis.classifier = "artifact_validation_source_path_normalization_bug"
+            if detect_artifact_source_path_normalization_bug(report):
+                report_diagnosis.summary = (
+                    "Stage 7 failed to route validator findings back to a worker because the persisted artifact report uses line-annotated source paths that need normalization before ownership lookup."
+                )
+            else:
+                report_diagnosis.summary = (
+                    "Stage 7 reported `no mappable owning worker`, which strongly indicates a repair-routing bug in the orchestrator. "
+                    "Inspect validator source_files normalization and ownership matching before attempting broader app-level fixes."
+                )
+            report_diagnosis.hints = [
+                "Normalize validator source_files before Stage 7 ownership routing.",
+                "Strip :line, :line:column, and #Lline suffixes before matching source files to owned_paths and contracts.",
+                "Repair the orchestrator routing layer before attempting broader app-level changes.",
+                *report_diagnosis.hints,
+            ]
+            report_diagnosis.suspected_files = sorted({
+                ORCHESTRATOR.name,
+                Path(__file__).name,
+                PROMPT_V3.name,
+                "Prompt_V3_Codex_Supervisor.md",
+                *report_diagnosis.suspected_files,
+            })
+        if report_diagnosis.hints or report_diagnosis.summary != f"Failure class: {classifier}":
+            return report_diagnosis
+
     diagnosis = FailureDiagnosis(classifier=classifier, summary=f"Failure class: {classifier}")
+    if classifier == "artifact_validation" and "no mappable owning worker" in output.lower():
+        diagnosis.classifier = "artifact_validation_source_path_normalization_bug"
+        diagnosis.summary = (
+            "Stage 7 reported `no mappable owning worker`, which strongly indicates an orchestrator repair-routing bug. "
+            "Prioritize source_files normalization and ownership matching in the Stage 7 router."
+        )
+        diagnosis.hints = [
+            "Normalize validator source_files before Stage 7 ownership routing.",
+            "Strip :line, :line:column, and #Lline suffixes before matching source files to owned_paths and contracts.",
+            "Repair the orchestrator routing layer before attempting broader app-level changes.",
+        ]
+        diagnosis.suspected_files = [
+            ORCHESTRATOR.name,
+            Path(__file__).name,
+            PROMPT_V3.name,
+            "Prompt_V3_Codex_Supervisor.md",
+        ]
+        return diagnosis
     if classifier != "filesystem_policy":
         return diagnosis
 
@@ -311,19 +538,35 @@ def diagnose_failure(classifier: str, output: str) -> FailureDiagnosis:
 
 
 def allowed_files_for_failure(classifier: str, diagnosis: Optional[FailureDiagnosis] = None) -> List[str]:
+    effective_classifier = diagnosis.classifier if diagnosis else classifier
     base = {
         ORCHESTRATOR.name,
         Path(__file__).name,
         README_MD.name,
         PROMPT_V3.name,
+        "Prompt_V3_Codex_Supervisor.md",
     }
     plan_paths = load_plan_paths()
-    if classifier in {"artifact_validation", "build_validation", "runtime_validation", "filesystem_policy", "unknown", "codex_exec_failure"}:
+    if effective_classifier in {"artifact_validation", "build_validation", "runtime_validation", "filesystem_policy", "unknown", "codex_exec_failure"}:
         base.update(plan_paths)
+    if effective_classifier in {"artifact_validation", "build_validation", "runtime_validation", "unknown"}:
+        return repo_editable_files()
     if diagnosis:
         base.update(diagnosis.suspected_files)
+        if diagnosis.classifier == "artifact_validation_source_path_normalization_bug":
+            return sorted({
+                ORCHESTRATOR.name,
+                Path(__file__).name,
+                PROMPT_V3.name,
+                "Prompt_V3_Codex_Supervisor.md",
+                README_MD.name,
+            })
         if diagnosis.classifier in {"filesystem_policy_bracket_path_mismatch", "filesystem_policy_owned_path_mismatch"}:
-            base = {item for item in base if item in {ORCHESTRATOR.name, Path(__file__).name, PROMPT_V3.name, README_MD.name} or item in diagnosis.suspected_files}
+            base = {
+                item for item in base
+                if item in {ORCHESTRATOR.name, Path(__file__).name, PROMPT_V3.name, "Prompt_V3_Codex_Supervisor.md", README_MD.name}
+                or item in diagnosis.suspected_files
+            }
     return sorted(base)
 
 
@@ -361,6 +604,18 @@ def build_repair_prompt(
     worktree_state = run_capture(["git", "worktree", "list", "--porcelain"])
     git_status = run_capture(["git", "status", "--short"])
     plan_hint = PLAN_JSON.read_text(encoding="utf-8")[:4000] if PLAN_JSON.exists() else ""
+    validation_report_block = ""
+    if diagnosis.report_path:
+        validation_report_block = textwrap.dedent(
+            f"""
+
+            Persisted validation report:
+            Path: {diagnosis.report_path}
+            ```json
+            {tail_text(diagnosis.report_excerpt, 7000)}
+            ```
+            """
+        ).rstrip()
     return textwrap.dedent(
         f"""\
         You are a bounded repair agent for a failing Codex-only orchestration repository.
@@ -385,7 +640,10 @@ def build_repair_prompt(
         - If the fix requires prompt hardening for future runs, you may edit `Prompt_V3.md` if it is in the allowed list.
         - Run lightweight local verification after editing if possible.
         - Return only JSON matching the provided schema.
-        - Treat the local pre-diagnosis as strong evidence unless the code clearly disproves it.
+        - Treat the local pre-diagnosis and any persisted validation report as strong evidence unless the code clearly disproves them.
+        - Prefer fixing files explicitly cited by the validator before making speculative changes elsewhere.
+        - For artifact, build, runtime, or unknown failures, inspect the repository systemically and look for deeper cross-file causes before patching.
+        - You have authority to repair any repository artifact in the allowed file set, not only the files mentioned in the traceback.
 
         Local repair hints:
         {json.dumps(diagnosis.hints, indent=2)}
@@ -414,6 +672,7 @@ def build_repair_prompt(
         ```json
         {tail_text(plan_hint, 4000)}
         ```
+        {validation_report_block}
         """
     ).strip()
 
@@ -466,6 +725,7 @@ def run_codex_repair(prompt: str, schema_path: Path, timeout: int) -> RepairResu
         details = " | ".join(part for part in [proc.stderr.strip(), " || ".join(error_messages).strip()] if part)
         raise RuntimeError(f"codex repair failed ({proc.returncode}): {details}")
     payload = json.loads(final_text)
+    log_verbose(f"Codex repair usage: {json.dumps(usage, ensure_ascii=True)}")
     return RepairResult(
         final_status=payload["final_status"],
         root_cause=payload["root_cause"],
@@ -532,20 +792,28 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-heal-attempts", type=int, default=3, help="Maximum Codex repair attempts after a failed orchestrator run")
     parser.add_argument("--run-timeout", type=int, default=RUN_TIMEOUT_SECONDS, help="Timeout in seconds for each orchestrator run")
     parser.add_argument("--repair-timeout", type=int, default=CODEX_TIMEOUT_SECONDS, help="Timeout in seconds for each Codex repair call")
+    parser.add_argument("--verbose", action="store_true", help="Print detailed diagnosis, repair-scope, and resume reasoning")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    global VERBOSE
+    VERBOSE = args.verbose
     ensure_dirs()
     schema_path = write_schema()
     orchestrator_command = build_orchestrator_command(args)
     next_resume_stage: Optional[str] = None
     seen_fingerprints: Dict[str, int] = {}
 
+    log_verbose(f"Supervisor configuration: model={MODEL}, sandbox={SANDBOX}, approval_policy={APPROVAL_POLICY}, run_timeout={args.run_timeout}, repair_timeout={args.repair_timeout}")
+    log_verbose(f"Orchestrator base command: {' '.join(orchestrator_command)}")
+
     for run_attempt in range(1, args.max_heal_attempts + 2):
         command_for_run = with_resume_stage(orchestrator_command, next_resume_stage)
         log_step(f"Supervisor run attempt {run_attempt}: {' '.join(command_for_run)}")
+        if next_resume_stage:
+            log_verbose(f"Resuming from stage selected by previous repair: {next_resume_stage}")
         result = run_streaming(command_for_run, timeout=args.run_timeout)
         run_log_path = RUN_LOGS_DIR / f"run_attempt_{run_attempt:02d}.log"
         write_text(run_log_path, result.output)
@@ -573,6 +841,9 @@ def main() -> int:
         diagnosis = diagnose_failure(classifier, result.output)
         fingerprint = fingerprint_failure(diagnosis.classifier, result.output)
         seen_fingerprints[fingerprint] = seen_fingerprints.get(fingerprint, 0) + 1
+        log_verbose(f"Failure classified as: {classifier}")
+        log_json("Failure diagnosis", asdict(diagnosis), limit=7000)
+        log_verbose(f"Failure fingerprint occurrence count: {seen_fingerprints[fingerprint]}")
         if run_attempt > args.max_heal_attempts or seen_fingerprints[fingerprint] > 2:
             report = {
                 "status": "blocked",
@@ -593,14 +864,23 @@ def main() -> int:
             "diagnosis": asdict(diagnosis),
         })
         allowed_files = allowed_files_for_failure(classifier, diagnosis)
+        log_json("Allowed editable files", allowed_files, limit=7000)
         before = snapshot_workspace(ROOT)
         prompt = build_repair_prompt(run_attempt, diagnosis.classifier, diagnosis, command_for_run, result.output, allowed_files)
+        log_verbose(f"Repair prompt length: {len(prompt)} characters")
+        if diagnosis.report_path:
+            log_verbose(f"Repair prompt includes persisted validation report: {diagnosis.report_path}")
         repair = run_codex_repair(prompt, schema_path, timeout=args.repair_timeout)
+        log_json("Repair result", asdict(repair), limit=7000)
         verify_python_files()
         after = snapshot_workspace(ROOT)
         changed_files = diff_snapshots(before, after)
         disallowed_changes = sorted(path for path in changed_files if path not in allowed_files)
         next_resume_stage = choose_resume_stage(changed_files, diagnosis)
+        log_json("Detected changed files", changed_files)
+        if disallowed_changes:
+            log_json("Disallowed changes", disallowed_changes)
+        log_verbose(f"Selected next resume stage: {next_resume_stage or 'Stage 1'}")
         repair_log_payload = {
             "timestamp": utc_now(),
             "type": "repair_attempt",

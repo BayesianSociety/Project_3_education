@@ -1,156 +1,148 @@
-import type Database from 'better-sqlite3';
-
-export type TotalsSummary = {
-  sessions: number;
-  activeSessions: number;
-  attempts: number;
-  successRate: number;
-  events: number;
-  movementSteps: number;
-};
-
-export type PuzzleSummary = {
-  puzzleId: string;
-  title: string | null;
-  concept: string | null;
-  attempts: number;
-  successRate: number;
-  avgHints: number | null;
-  avgDurationMs: number | null;
-  lastCompletedAt: string | null;
-};
-
-export type AttemptSnapshot = {
-  id: string;
-  sessionId: string;
-  puzzleId: string;
-  outcome: string;
-  failureReason: string | null;
-  startedAt: string;
-  completedAt: string | null;
-  durationMs: number | null;
-};
+import { getDb } from '@/lib/db/sqlite';
 
 export type AnalyticsSummary = {
-  totals: TotalsSummary;
-  puzzles: PuzzleSummary[];
-  recentAttempts: AttemptSnapshot[];
+  totalUsers: number;
+  totalSessions: number;
+  totalAttempts: number;
+  successRate: number;
+  averageCommands: number;
+  eventsByType: { type: string; count: number }[];
+  puzzleLeaderboard: { id: string; title: string; attempts: number; clears: number }[];
 };
 
-const asNumber = (value: unknown, fallback = 0) => {
-  const parsed = typeof value === 'number' ? value : Number(value ?? fallback);
-  return Number.isFinite(parsed) ? parsed : fallback;
+export type PuzzleAnalytics = {
+  puzzleId: string;
+  title: string;
+  attempts: number;
+  clears: number;
+  averageDurationMs: number;
+  failureReasons: { reason: string; count: number }[];
+  recentAttempts: {
+    attemptId: string;
+    status: string;
+    failureReason: string | null;
+    endedAt: string | null;
+  }[];
 };
 
-const computeTotals = (db: Database): TotalsSummary => {
-  const sessionRow = db.prepare(
-    `SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active FROM sessions`,
-  ).get() as { total?: number; active?: number } | undefined;
-
-  const attemptRow = db.prepare(
-    `SELECT COUNT(*) AS total, SUM(CASE WHEN outcome = 'success' THEN 1 ELSE 0 END) AS success FROM attempts`,
-  ).get() as { total?: number; success?: number } | undefined;
-
-  const eventsRow = db.prepare(`SELECT COUNT(*) AS total FROM events`).get() as { total?: number } | undefined;
-  const movementRow = db.prepare(`SELECT COUNT(*) AS total FROM movements`).get() as { total?: number } | undefined;
-
-  const attemptCount = asNumber(attemptRow?.total);
-  const successRate = attemptCount === 0 ? 0 : asNumber(attemptRow?.success) / attemptCount;
-
-  return {
-    sessions: asNumber(sessionRow?.total),
-    activeSessions: asNumber(sessionRow?.active),
-    attempts: attemptCount,
-    successRate,
-    events: asNumber(eventsRow?.total),
-    movementSteps: asNumber(movementRow?.total),
-  };
-};
-
-const computePuzzleSummaries = (db: Database): PuzzleSummary[] => {
-  const rows = db
-    .prepare(`
-      SELECT
-        p.id AS puzzleId,
-        p.title AS title,
-        p.concept AS concept,
-        COUNT(a.id) AS attempts,
-        SUM(CASE WHEN a.outcome = 'success' THEN 1 ELSE 0 END) AS successCount,
-        AVG(a.hint_count) AS avgHints,
-        AVG(
-          CASE
-            WHEN a.completed_at IS NOT NULL THEN
-              (julianday(a.completed_at) - julianday(a.started_at)) * 86400000
-            ELSE NULL
-          END
-        ) AS avgDurationMs,
-        MAX(a.completed_at) AS lastCompletedAt
-      FROM puzzles p
-      LEFT JOIN attempts a ON a.puzzle_id = p.id
-      GROUP BY p.id
-      ORDER BY p.sort_order ASC;
-    `)
-    .all() as Array<{
+export type ReplayPayload = {
+  attempt: {
+    id: string;
     puzzleId: string;
-    title: string | null;
-    concept: string | null;
-    attempts: number | null;
-    successCount: number | null;
-    avgHints: number | null;
-    avgDurationMs: number | null;
-    lastCompletedAt: string | null;
-  }>;
-
-  return rows.map((row) => {
-    const attemptCount = asNumber(row.attempts);
-    const successRate = attemptCount === 0 ? 0 : asNumber(row.successCount) / attemptCount;
-    return {
-      puzzleId: row.puzzleId,
-      title: row.title,
-      concept: row.concept,
-      attempts: attemptCount,
-      successRate,
-      avgHints: row.avgHints,
-      avgDurationMs: row.avgDurationMs,
-      lastCompletedAt: row.lastCompletedAt,
-    };
-  });
+    sessionId: string;
+    status: string;
+    failureReason: string | null;
+    codeSnapshot: string | null;
+  };
+  events: { type: string; detail: unknown; createdAt: string }[];
+  movements: { stepIndex: number; x: number; y: number; action: string; timestamp: string }[];
 };
 
-const computeRecentAttempts = (db: Database, limit = 25): AttemptSnapshot[] => {
-  const rows = db
-    .prepare(
-      `
-      SELECT
-        a.id AS id,
-        a.session_id AS sessionId,
-        a.puzzle_id AS puzzleId,
-        a.outcome AS outcome,
-        a.failure_reason AS failureReason,
-        a.started_at AS startedAt,
-        a.completed_at AS completedAt,
-        CASE
-          WHEN a.completed_at IS NOT NULL THEN
-            (julianday(a.completed_at) - julianday(a.started_at)) * 86400000
-          ELSE NULL
-        END AS durationMs
-      FROM attempts a
-      ORDER BY a.started_at DESC
-      LIMIT ?;
-    `,
-    )
-    .all(limit) as Array<AttemptSnapshot>;
+export function getAnalyticsSummary(): AnalyticsSummary {
+  const db = getDb();
+  const totals = db.prepare(
+    `SELECT 
+        (SELECT COUNT(*) FROM users) AS users,
+        (SELECT COUNT(*) FROM sessions) AS sessions,
+        (SELECT COUNT(*) FROM attempts) AS attempts,
+        (SELECT COALESCE(AVG(CAST(json_extract(metadata, '$.commands') AS REAL)), 0) FROM attempts WHERE metadata IS NOT NULL) AS avgCommands,
+        (SELECT SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) FROM attempts) AS clears
+    `
+  ).get();
 
-  return rows.map((row) => ({
-    ...row,
-    durationMs: row.durationMs === null ? null : Math.round(row.durationMs),
-  }));
-};
+  const eventsByType = db.prepare(`
+    SELECT type, COUNT(*) as count FROM events GROUP BY type ORDER BY count DESC LIMIT 12
+  `).all();
 
-export function buildAnalyticsSummary(db: Database): AnalyticsSummary {
+  const leaderboard = db.prepare(`
+    SELECT p.id, p.title, COUNT(a.id) as attempts, SUM(CASE WHEN a.status = 'success' THEN 1 ELSE 0 END) as clears
+    FROM puzzles p
+    LEFT JOIN attempts a ON a.puzzle_id = p.id
+    GROUP BY p.id, p.title
+    ORDER BY p.order_index ASC
+  `).all();
+
+  const successRate = totals.attempts ? (totals.clears / totals.attempts) : 0;
+
   return {
-    totals: computeTotals(db),
-    puzzles: computePuzzleSummaries(db),
-    recentAttempts: computeRecentAttempts(db),
+    totalUsers: totals.users ?? 0,
+    totalSessions: totals.sessions ?? 0,
+    totalAttempts: totals.attempts ?? 0,
+    successRate,
+    averageCommands: totals.avgCommands ?? 0,
+    eventsByType,
+    puzzleLeaderboard: leaderboard,
+  };
+}
+
+export function getPuzzleAnalytics(puzzleId: string): PuzzleAnalytics {
+  const db = getDb();
+  const info = db.prepare(`SELECT title FROM puzzles WHERE id = ?`).get(puzzleId);
+  if (!info) {
+    throw new Error('Puzzle not found');
+  }
+
+  const attemptStats = db.prepare(`
+    SELECT COUNT(*) as attempts, SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as clears,
+           AVG(CAST(json_extract(metadata, '$.durationMs') AS REAL)) as avgDuration
+    FROM attempts
+    WHERE puzzle_id = ?
+  `).get(puzzleId);
+
+  const failureReasons = db.prepare(`
+    SELECT COALESCE(failure_reason, 'unknown') as reason, COUNT(*) as count
+    FROM attempts
+    WHERE puzzle_id = ? AND status = 'failure'
+    GROUP BY reason
+    ORDER BY count DESC
+  `).all(puzzleId);
+
+  const recentAttempts = db.prepare(`
+    SELECT id as attemptId, status, failure_reason as failureReason, ended_at as endedAt
+    FROM attempts
+    WHERE puzzle_id = ?
+    ORDER BY (ended_at IS NULL), ended_at DESC, started_at DESC
+    LIMIT 20
+  `).all(puzzleId);
+
+  return {
+    puzzleId,
+    title: info.title,
+    attempts: attemptStats.attempts ?? 0,
+    clears: attemptStats.clears ?? 0,
+    averageDurationMs: attemptStats.avgDuration ?? 0,
+    failureReasons,
+    recentAttempts,
+  };
+}
+
+export function getReplayPayload(attemptId: string): ReplayPayload {
+  const db = getDb();
+  const attempt = db
+    .prepare('SELECT id, puzzle_id as puzzleId, session_id as sessionId, status, failure_reason as failureReason, code_snapshot as codeSnapshot FROM attempts WHERE id = ?')
+    .get(attemptId);
+  if (!attempt) {
+    throw new Error('Attempt not found');
+  }
+
+  const events = db
+    .prepare('SELECT type, detail, created_at as createdAt FROM events WHERE attempt_id = ? ORDER BY created_at ASC')
+    .all(attemptId)
+    .map((event) => ({
+      type: event.type,
+      detail: event.detail ? JSON.parse(event.detail) : null,
+      createdAt: event.createdAt,
+    }));
+
+  const movements = db
+    .prepare(
+      'SELECT step_index as stepIndex, x, y, action, timestamp FROM movements WHERE attempt_id = ? ORDER BY step_index ASC'
+    )
+    .all(attemptId);
+
+  return {
+    attempt,
+    events,
+    movements,
   };
 }

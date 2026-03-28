@@ -1,0 +1,9 @@
+{
+  "mode": "basic_only",
+  "status": "passed",
+  "local_report": {
+    "status": "passed",
+    "missing": []
+  },
+  "note": "Stage 7 is running in relaxed basic-validation mode. Semantic verifier findings are advisory and do not block progression."
+}

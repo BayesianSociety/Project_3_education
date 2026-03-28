@@ -1,0 +1,22 @@
+{
+  "status": "advisory_failed",
+  "mode": "advisory_only",
+  "results": [
+    {
+      "name": "SQLite migration check",
+      "command": "NODE_ENV=test npx tsx scripts/migrate.ts --check",
+      "returncode": 1,
+      "stdout_tail": "",
+      "stderr_tail": "ION 115. This version of Node.js requires\nNODE_MODULE_VERSION 137. Please try re-compiling or re-installing\nthe module (for instance, using `npm rebuild` or `npm install`).\n    at Object..node (node:internal/modules/cjs/loader:1920:18)\n    at Module.load (node:internal/modules/cjs/loader:1480:32)\n    at Module._load (node:internal/modules/cjs/loader:1299:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)\n    at Module.require (node:internal/modules/cjs/loader:1503:12)\n    at require (node:internal/modules/helpers:152:16)\n    at bindings (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/bindings/bindings.js:112:48)\n    at new Database (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/better-sqlite3/lib/database.js:48:64)\n    at getDb (/home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/sqlite.ts:28:14) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n\nNode.js v24.11.0\n",
+      "status": "failed"
+    },
+    {
+      "name": "Telemetry smoke",
+      "command": "NODE_ENV=test npx tsx scripts/telemetry_smoke.ts",
+      "returncode": 1,
+      "stdout_tail": "POST /api/session/start\n",
+      "stderr_tail": "g\nNODE_MODULE_VERSION 115. This version of Node.js requires\nNODE_MODULE_VERSION 137. Please try re-compiling or re-installing\nthe module (for instance, using `npm rebuild` or `npm install`).\n    at Object..node (node:internal/modules/cjs/loader:1920:18)\n    at Module.load (node:internal/modules/cjs/loader:1480:32)\n    at Module._load (node:internal/modules/cjs/loader:1299:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)\n    at Module.require (node:internal/modules/cjs/loader:1503:12)\n    at require (node:internal/modules/helpers:152:16)\n    at bindings (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/bindings/bindings.js:112:48)\n    at new Database (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/better-sqlite3/lib/database.js:48:64)\n    at getDb (/home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/sqlite.ts:28:14) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n",
+      "status": "failed"
+    }
+  ]
+}

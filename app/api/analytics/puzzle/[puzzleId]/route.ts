@@ -1,21 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPuzzleAnalytics } from '@/lib/telemetry/analytics';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-type PuzzleParams = {
-  puzzleId: string;
-};
-
-export async function GET(
-  _request: Request,
-  context: { params: PuzzleParams },
-) {
-  return NextResponse.json(
-    {
-      error: 'Puzzle analytics route not yet implemented',
-      puzzleId: context.params.puzzleId,
-    },
-    { status: 501 },
-  );
+export async function GET(_request: NextRequest, context: { params: Promise<{ puzzleId: string }> }) {
+  try {
+    const { puzzleId } = await context.params;
+    const detail = getPuzzleAnalytics(puzzleId);
+    return NextResponse.json({ ok: true, detail });
+  } catch (error) {
+    console.error('puzzle analytics failed', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const normalized = message.toLowerCase();
+    const status = normalized.includes('not found') ? 404 : 500;
+    return NextResponse.json({ ok: false, error: message }, { status });
+  }
 }

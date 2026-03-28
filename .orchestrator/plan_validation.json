@@ -1,10 +1,4 @@
 {
-  "status": "valid",
-  "details": {
-    "status": "valid",
-    "worker_roles": [
-      "Backend Producer",
-      "Frontend Producer"
-    ]
-  }
+  "status": "valid_after_repair",
+  "attempt": 1
 }

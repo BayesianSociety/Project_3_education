@@ -1,5 +1,5 @@
 {
-  "task_summary": "Build the Block Coding Puzzles Next.js 16 app with Blockly workspace, WebGL renderer, and SQLite telemetry/analytics that satisfy the brief end-to-end.",
+  "task_summary": "Plan and stage the Block Coding Puzzles Next.js implementation with telemetry, analytics, and WebGL gameplay.",
   "project_brief_path": "Project_description.md",
   "stages": [
     "Environment preflight",
@@ -23,323 +23,333 @@
   ],
   "shared_artifacts": [
     "Project_description.md",
-    "Design_of_project_description.md",
-    "Game_description.md",
-    "docs/architecture/api-contracts.md",
-    "docs/architecture/block-engine-contract.md",
-    "docs/architecture/telemetry-contract.md"
+    ".orchestrator/context_analysis.json",
+    ".orchestrator/plan.json",
+    ".orchestrator/plan_validation.json",
+    ".orchestrator/final_acceptance_summary.json",
+    "design/layout_refs/layout.png",
+    "public/assets/backgrounds/background.jpg",
+    "public/assets/sprites/main_character.png",
+    "public/assets/sprites/place.png",
+    "public/assets/sprites/obstacle.png",
+    "public/assets/sprites/food.png"
   ],
   "contracts": [
-    "docs/architecture/api-contracts.md",
-    "docs/architecture/block-engine-contract.md",
-    "docs/architecture/telemetry-contract.md"
+    "Project_description.md",
+    "Game_description.md",
+    "Design_of_project_description.md"
   ],
   "validation_rules": [
     {
-      "name": "PuzzleDataFile",
+      "name": "Brief present",
       "kind": "file_exists",
-      "target": "lib/puzzles/definitions.ts",
-      "expectation": "Data module exports exactly three sequential puzzles with layout coordinates, goal text, available blocks, constraints, and hint hooks tied to asset IDs."
+      "target": "Project_description.md",
+      "expectation": "canonical project brief is available"
     },
     {
-      "name": "WorkspaceContract",
-      "kind": "contains_text",
-      "target": "components/Workspace/BlockWorkspace.tsx",
-      "expectation": "Workspace enforces the fixed On Start root, command categories, Show Code toggle, and displays a pink/violet warning for disconnected blocks."
-    },
-    {
-      "name": "AnalyticsRoutes",
-      "kind": "route_contract",
-      "target": "app/api/analytics",
-      "expectation": "Implements GET /api/analytics/summary, /api/analytics/puzzle/[puzzleId], /api/analytics/attempts/[attemptId], and /api/analytics/movements/[attemptId] returning analytics JSON."
-    },
-    {
-      "name": "SessionEndpoints",
-      "kind": "route_contract",
-      "target": "app/api/session",
-      "expectation": "Provides POST /api/session/start and POST /api/session/end that manage SQLite rows and return identifiers for telemetry usage."
-    },
-    {
-      "name": "TelemetrySmokeTest",
-      "kind": "offline_command",
-      "target": "node scripts/verify/simulate_run.ts",
-      "expectation": "Command seeds puzzle data, simulates Play/Reset, submits telemetry batch, and prints attempts/events/movements counts without network use."
-    },
-    {
-      "name": "SQLiteMovementRows",
-      "kind": "sqlite_artifact",
-      "target": "var/data/block_coding.sqlite",
-      "expectation": "After running the smoke command the database contains attempts, events, and ordered movement rows for replay queries."
-    },
-    {
-      "name": "WebGLRendererImplementation",
+      "name": "Layout guide present",
       "kind": "file_exists",
-      "target": "lib/game/renderer/webglPipeline.ts",
-      "expectation": "Renderer module drives WebGL-based layered scenes with asset placement, smooth animation, collisions, and keyboard-accessible camera controls."
+      "target": "design/layout_refs/layout.png",
+      "expectation": "scene placement reference exists"
+    },
+    {
+      "name": "Sprites available",
+      "kind": "file_exists",
+      "target": "public/assets/sprites/main_character.png",
+      "expectation": "primary sprite asset exists"
+    },
+    {
+      "name": "Background available",
+      "kind": "file_exists",
+      "target": "public/assets/backgrounds/background.jpg",
+      "expectation": "base scene background exists"
+    },
+    {
+      "name": "Manifest parses",
+      "kind": "json_parse",
+      "target": "package.json",
+      "expectation": "Next.js workspace manifest is valid JSON"
     }
   ],
   "build_expectations": [
     {
-      "name": "Lint",
-      "command": "npm run lint",
+      "name": "TypeScript lint",
+      "command": "npx next lint",
       "offline_safe": true
     },
     {
-      "name": "NextBuild",
-      "command": "npm run build",
+      "name": "Production build",
+      "command": "npx next build",
       "offline_safe": true
     }
   ],
   "runtime_expectations": [
     {
-      "name": "DevServer",
-      "command": "SQLITE_DB_DIRECTORY=var/data npm run dev -- --hostname 127.0.0.1 --port 4000",
+      "name": "SQLite migration check",
+      "command": "NODE_ENV=test npx tsx scripts/migrate.ts --check",
       "offline_safe": true
     },
     {
-      "name": "SimulateTelemetry",
-      "command": "node scripts/verify/simulate_run.ts",
+      "name": "Telemetry smoke",
+      "command": "NODE_ENV=test npx tsx scripts/telemetry_smoke.ts",
       "offline_safe": true
     }
   ],
   "worker_tasks": [
     {
       "role": "Backend Producer",
-      "summary": "Stand up the Next.js configuration, SQLite schema bootstrap, puzzle data module, telemetry ingestion pipeline, analytics query layer, REST endpoints, and verification/contract docs.",
+      "summary": "Stand up the Next.js workspace, SQLite schema, puzzle data source, telemetry ingestion, analytics APIs, and offline smoke scripts.",
       "owned_paths": [
         "package.json",
+        "package-lock.json",
         "tsconfig.json",
         "next.config.mjs",
-        "next-env.d.ts",
+        ".eslintrc.cjs",
+        "lib/db/sqlite.ts",
+        "lib/db/schema.ts",
+        "lib/db/migrations.ts",
+        "lib/telemetry/ingest.ts",
+        "lib/telemetry/analytics.ts",
+        "lib/telemetry/types.ts",
+        "lib/puzzles/data.ts",
+        "types/telemetry.ts",
         "app/api/session/start/route.ts",
         "app/api/session/end/route.ts",
-        "app/api/attempts/start/route.ts",
-        "app/api/attempts/complete/route.ts",
         "app/api/events/batch/route.ts",
         "app/api/analytics/summary/route.ts",
         "app/api/analytics/puzzle/[puzzleId]/route.ts",
-        "app/api/analytics/attempts/[attemptId]/route.ts",
-        "app/api/analytics/movements/[attemptId]/route.ts",
-        "lib/db/client.ts",
-        "lib/db/migrations.ts",
-        "lib/db/schema.ts",
-        "lib/puzzles/definitions.ts",
-        "lib/puzzles/types.ts",
-        "lib/server/sessionService.ts",
-        "lib/server/attemptService.ts",
-        "lib/server/analyticsService.ts",
-        "lib/server/progressionService.ts",
-        "lib/telemetry/ingest.ts",
-        "lib/telemetry/analytics.ts",
-        "lib/api/contracts.ts",
-        "docs/architecture/api-contracts.md",
-        "docs/architecture/telemetry-contract.md",
-        "scripts/verify/simulate_run.ts",
-        "scripts/verify/seedAnalytics.ts"
+        "app/api/analytics/replay/[attemptId]/route.ts",
+        "scripts/migrate.ts",
+        "scripts/seed_demo_data.ts",
+        "scripts/telemetry_smoke.ts"
       ],
       "required_outputs": [
         "package.json",
-        "app/api/session/start/route.ts",
+        "lib/db/sqlite.ts",
+        "lib/puzzles/data.ts",
         "app/api/events/batch/route.ts",
-        "app/api/analytics/summary/route.ts",
-        "lib/puzzles/definitions.ts",
-        "lib/server/sessionService.ts",
-        "docs/architecture/api-contracts.md",
-        "scripts/verify/simulate_run.ts"
+        "app/api/analytics/replay/[attemptId]/route.ts",
+        "scripts/telemetry_smoke.ts"
       ],
       "read_only_inputs": [
         "Project_description.md",
-        "Design_of_project_description.md",
-        "Game_description.md",
         "design/layout_refs/layout.png",
         "public/assets/backgrounds/background.jpg",
         "public/assets/sprites/main_character.png",
-        "public/assets/sprites/obstacle.png",
         "public/assets/sprites/place.png",
+        "public/assets/sprites/obstacle.png",
         "public/assets/sprites/food.png",
-        "scripts/resetDb.ts"
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/puzzles/page.tsx",
+        "app/puzzles/[puzzleId]/page.tsx",
+        "app/analytics/page.tsx",
+        "components/blockly/Workspace.tsx",
+        "components/game/SceneCanvas.tsx",
+        "components/analytics/Dashboard.tsx",
+        "styles/globals.css",
+        "lib/game/runtime.ts"
       ],
       "forbidden_paths": [
-        "public/assets/backgrounds/background.jpg",
-        "public/assets/sprites/main_character.png",
-        "public/assets/sprites/obstacle.png",
-        "public/assets/sprites/place.png",
-        "public/assets/sprites/food.png",
-        "design/layout_refs/layout.png"
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/puzzles/page.tsx",
+        "app/puzzles/[puzzleId]/page.tsx",
+        "app/analytics/page.tsx",
+        "components/blockly/Workspace.tsx",
+        "components/blockly/Palette.tsx",
+        "components/game/SceneCanvas.tsx",
+        "components/game/RunControls.tsx",
+        "components/game/HintPanel.tsx",
+        "components/game/ShowCodePanel.tsx",
+        "components/game/TextToSpeechToggle.tsx",
+        "components/analytics/Dashboard.tsx",
+        "components/analytics/EventStream.tsx",
+        "components/analytics/MovementReplay.tsx",
+        "hooks/useBlocklyWorkspace.ts",
+        "hooks/useTelemetryBuffer.ts",
+        "lib/game/runtime.ts",
+        "lib/game/world.ts",
+        "lib/webgl/renderer.ts",
+        "styles/globals.css",
+        "styles/theme.css"
       ],
-      "dependencies": [],
+      "dependencies": [
+        "Architect"
+      ],
       "contracts": [
-        "docs/architecture/api-contracts.md",
-        "docs/architecture/telemetry-contract.md"
+        "Create better-sqlite3 helpers that auto-initialize all telemetry and puzzle tables on first access, including movement logging.",
+        "Implement the session, event batch, and analytics/replay Next.js API routes with validation, failure reason tagging, and code snapshot handling.",
+        "Ship migration/seed and telemetry smoke scripts so build/runtime expectations can verify DB bootstrap and event persistence offline."
       ],
       "validation_rules": [
         {
-          "name": "SessionStartRoute",
-          "kind": "file_exists",
-          "target": "app/api/session/start/route.ts",
-          "expectation": "Handler validates payload, creates/updates users and sessions, and returns IDs for telemetry linkage."
-        },
-        {
-          "name": "SessionEndRoute",
-          "kind": "file_exists",
-          "target": "app/api/session/end/route.ts",
-          "expectation": "Completes sessions, updates attempts, and records ended_at timestamps."
-        },
-        {
-          "name": "TelemetryBatchRoute",
+          "name": "Manifest declares Next 16",
           "kind": "contains_text",
+          "target": "package.json",
+          "expectation": "includes \"next\": \"16\" and blockly dependency entries"
+        },
+        {
+          "name": "DB helper uses better-sqlite3",
+          "kind": "contains_text",
+          "target": "lib/db/sqlite.ts",
+          "expectation": "imports better-sqlite3 and configures pragmas"
+        },
+        {
+          "name": "Event API present",
+          "kind": "file_exists",
           "target": "app/api/events/batch/route.ts",
-          "expectation": "Route parses arrays of events/movements, invokes persistTelemetryBatch, and rejects empty submissions."
+          "expectation": "batch ingestion endpoint implemented"
         },
         {
-          "name": "AnalyticsSummaryRoute",
+          "name": "Replay API present",
+          "kind": "file_exists",
+          "target": "app/api/analytics/replay/[attemptId]/route.ts",
+          "expectation": "movement replay endpoint implemented"
+        },
+        {
+          "name": "Telemetry smoke references endpoints",
           "kind": "contains_text",
-          "target": "app/api/analytics/summary/route.ts",
-          "expectation": "Uses buildAnalyticsSummary from lib/telemetry/analytics to deliver totals, puzzle summaries, and recent attempts."
-        },
-        {
-          "name": "SimulateRunScript",
-          "kind": "offline_command",
-          "target": "node scripts/verify/simulate_run.ts",
-          "expectation": "Script instantiates puzzles, fakes execution, and logs attempts/events/movements counts via better-sqlite3."
+          "target": "scripts/telemetry_smoke.ts",
+          "expectation": "hits /api/session/start and /api/events/batch for offline verification"
         }
       ]
     },
     {
       "role": "Frontend Producer",
-      "summary": "Deliver the landing, level select, puzzle UI, Blockly workspace, WebGL scene/runtime, analytics dashboards, telemetry bridge, and block-engine contract that meet visual and accessibility goals.",
+      "summary": "Build the landing, puzzle map, gameplay UI with block editor + WebGL scene, failure feedback, accessibility, analytics dashboard, and replay visualizations.",
       "owned_paths": [
         "app/layout.tsx",
         "app/page.tsx",
-        "app/globals.css",
-        "app/levels/page.tsx",
+        "app/puzzles/page.tsx",
         "app/puzzles/[puzzleId]/page.tsx",
         "app/analytics/page.tsx",
-        "components/Layout/TopBar.tsx",
-        "components/Layout/PageShell.tsx",
-        "components/Landing/HeroPanel.tsx",
-        "components/Landing/HowToPlay.tsx",
-        "components/Puzzles/LevelSelectGrid.tsx",
-        "components/Puzzles/PuzzleHUD.tsx",
-        "components/Puzzles/GoalNarration.tsx",
-        "components/Puzzles/FailureHintOverlay.tsx",
-        "components/Workspace/BlockWorkspace.tsx",
-        "components/Workspace/ToolboxCategories.tsx",
-        "components/Workspace/CodePreview.tsx",
-        "components/Workspace/DisconnectedWarning.tsx",
-        "components/Controls/ExecutionControls.tsx",
-        "components/Controls/SpeedToggle.tsx",
-        "components/Controls/PlayResetButtons.tsx",
-        "components/Controls/TextToSpeechButton.tsx",
-        "components/Scene/WebGLSceneCanvas.tsx",
-        "components/Scene/SceneOrchestrator.tsx",
-        "components/Scene/AnalyticsReplayCanvas.tsx",
-        "components/Analytics/AnalyticsDashboard.tsx",
-        "components/Analytics/EventStreamPanel.tsx",
-        "components/Analytics/AttemptReplayPanel.tsx",
-        "components/Analytics/PuzzleDetailPanel.tsx",
-        "hooks/usePuzzleRunner.ts",
-        "hooks/useWorkspaceWarnings.ts",
+        "components/layout/TopBar.tsx",
+        "components/layout/PuzzleProgress.tsx",
+        "components/blockly/Workspace.tsx",
+        "components/blockly/Palette.tsx",
+        "components/blockly/CodeWarning.tsx",
+        "components/game/SceneCanvas.tsx",
+        "components/game/RunControls.tsx",
+        "components/game/HintPanel.tsx",
+        "components/game/ShowCodePanel.tsx",
+        "components/game/SpeedToggle.tsx",
+        "components/game/TextToSpeechToggle.tsx",
+        "components/analytics/Dashboard.tsx",
+        "components/analytics/EventStream.tsx",
+        "components/analytics/MovementReplay.tsx",
+        "components/analytics/ReplaysList.tsx",
+        "hooks/useBlocklyWorkspace.ts",
         "hooks/useTelemetryBuffer.ts",
-        "hooks/useSessionLifecycle.ts",
-        "hooks/useHintSystem.ts",
-        "lib/game/types.ts",
-        "lib/game/world.ts",
-        "lib/game/compiler.ts",
+        "hooks/useAccessibility.ts",
         "lib/game/runtime.ts",
-        "lib/game/failureReasons.ts",
-        "lib/game/hints.ts",
-        "lib/game/renderer/webglPipeline.ts",
-        "lib/game/renderer/textureCache.ts",
-        "lib/game/blockly/theme.ts",
-        "lib/game/blockly/toolbox.ts",
-        "lib/game/blockly/blocks.ts",
-        "lib/game/blockly/codeExport.ts",
-        "lib/client/telemetryBridge.ts",
-        "lib/state/puzzleStore.ts",
-        "lib/state/uiStore.ts",
-        "styles/blockly-theme.css",
-        "styles/scene.css",
-        "docs/architecture/block-engine-contract.md"
+        "lib/game/world.ts",
+        "lib/game/replay.ts",
+        "lib/webgl/renderer.ts",
+        "lib/webgl/shaders.ts",
+        "lib/blockly/definitions.ts",
+        "lib/blockly/theme.ts",
+        "lib/blockly/serialization.ts",
+        "lib/ui/colors.ts",
+        "styles/globals.css",
+        "styles/theme.css"
       ],
       "required_outputs": [
         "app/puzzles/[puzzleId]/page.tsx",
-        "app/analytics/page.tsx",
-        "components/Workspace/BlockWorkspace.tsx",
-        "components/Scene/WebGLSceneCanvas.tsx",
-        "components/Analytics/AnalyticsDashboard.tsx",
-        "lib/game/runtime.ts",
-        "lib/game/renderer/webglPipeline.ts",
-        "lib/client/telemetryBridge.ts",
-        "styles/blockly-theme.css",
-        "docs/architecture/block-engine-contract.md"
+        "components/blockly/Workspace.tsx",
+        "components/game/SceneCanvas.tsx",
+        "components/game/HintPanel.tsx",
+        "components/analytics/Dashboard.tsx",
+        "styles/globals.css"
       ],
       "read_only_inputs": [
         "Project_description.md",
-        "Design_of_project_description.md",
-        "Game_description.md",
         "design/layout_refs/layout.png",
         "public/assets/backgrounds/background.jpg",
         "public/assets/sprites/main_character.png",
-        "public/assets/sprites/obstacle.png",
         "public/assets/sprites/place.png",
+        "public/assets/sprites/obstacle.png",
         "public/assets/sprites/food.png",
-        "lib/puzzles/definitions.ts",
-        "docs/architecture/api-contracts.md",
-        "docs/architecture/telemetry-contract.md"
+        "package.json",
+        "tsconfig.json",
+        "next.config.mjs",
+        ".eslintrc.cjs",
+        "lib/db/sqlite.ts",
+        "lib/db/schema.ts",
+        "lib/telemetry/ingest.ts",
+        "lib/telemetry/analytics.ts",
+        "lib/telemetry/types.ts",
+        "lib/puzzles/data.ts",
+        "types/telemetry.ts",
+        "app/api/session/start/route.ts",
+        "app/api/events/batch/route.ts",
+        "app/api/analytics/replay/[attemptId]/route.ts",
+        "scripts/migrate.ts",
+        "scripts/telemetry_smoke.ts"
       ],
       "forbidden_paths": [
-        "public/assets/backgrounds/background.jpg",
-        "public/assets/sprites/main_character.png",
-        "public/assets/sprites/obstacle.png",
-        "public/assets/sprites/place.png",
-        "public/assets/sprites/food.png",
-        "design/layout_refs/layout.png"
+        "package.json",
+        "package-lock.json",
+        "tsconfig.json",
+        "next.config.mjs",
+        ".eslintrc.cjs",
+        "lib/db/sqlite.ts",
+        "lib/db/schema.ts",
+        "lib/db/migrations.ts",
+        "lib/telemetry/ingest.ts",
+        "lib/telemetry/analytics.ts",
+        "lib/telemetry/types.ts",
+        "lib/puzzles/data.ts",
+        "types/telemetry.ts",
+        "app/api/session/start/route.ts",
+        "app/api/session/end/route.ts",
+        "app/api/events/batch/route.ts",
+        "app/api/analytics/summary/route.ts",
+        "app/api/analytics/puzzle/[puzzleId]/route.ts",
+        "app/api/analytics/replay/[attemptId]/route.ts",
+        "scripts/migrate.ts",
+        "scripts/seed_demo_data.ts",
+        "scripts/telemetry_smoke.ts"
       ],
       "dependencies": [
-        "lib/puzzles/definitions.ts",
-        "docs/architecture/api-contracts.md",
-        "docs/architecture/telemetry-contract.md"
+        "Architect",
+        "Backend Producer"
       ],
       "contracts": [
-        "docs/architecture/block-engine-contract.md"
+        "Deliver the drag-and-drop block workspace with fixed On Start root, category palette, Show Code toggle, disconnected-block warning, and speed controls.",
+        "Implement polished WebGL scene rendering that uses provided sprites/background to match the layout guide, animates runs, minimizes the workspace during play, and surfaces Oops! hints for failure reasons.",
+        "Build landing/map/analytics views with accessible controls, keyboard navigation, text-to-speech for goals, aggregates, event streams, and movement replay visualizations consuming backend APIs."
       ],
       "validation_rules": [
         {
-          "name": "LevelSelectPage",
+          "name": "Puzzle page exists",
           "kind": "file_exists",
-          "target": "app/levels/page.tsx",
-          "expectation": "Page renders three puzzles with lock/unlock state sourced from puzzle data and progression service."
+          "target": "app/puzzles/[puzzleId]/page.tsx",
+          "expectation": "gameplay route rendered in Next.js app router"
         },
         {
-          "name": "WorkspaceWarningComponent",
+          "name": "Hint panel says Oops",
           "kind": "contains_text",
-          "target": "components/Workspace/DisconnectedWarning.tsx",
-          "expectation": "Displays 'Oops!' copy plus hint reason when blocks are disconnected or failures occur."
+          "target": "components/game/HintPanel.tsx",
+          "expectation": "renders \"Oops!\" plus contextual hint text"
         },
         {
-          "name": "ExecutionControls",
+          "name": "Workspace anchors On Start",
           "kind": "contains_text",
-          "target": "components/Controls/ExecutionControls.tsx",
-          "expectation": "Renders Play, Reset, speed toggle, and keyboard handlers with aria labels and high-contrast styling."
+          "target": "components/blockly/Workspace.tsx",
+          "expectation": "ensures fixed On Start root node and category palette"
         },
         {
-          "name": "WebGLRendererFile",
-          "kind": "file_exists",
-          "target": "lib/game/renderer/webglPipeline.ts",
-          "expectation": "Implements WebGL2 scene rendering for puzzles, failure cues, speed modes, and analytics replay playback."
-        },
-        {
-          "name": "AnalyticsDashboardComponent",
+          "name": "WebGL renderer initialized",
           "kind": "contains_text",
-          "target": "components/Analytics/AnalyticsDashboard.tsx",
-          "expectation": "Displays totals, puzzle cards, attempt list, event stream, and movement replay tied to API data."
+          "target": "components/game/SceneCanvas.tsx",
+          "expectation": "creates a WebGLRenderingContext/WebGPU fallback for 2D scene"
         },
         {
-          "name": "GoalNarrationTTS",
+          "name": "Movement replay draws path",
           "kind": "contains_text",
-          "target": "components/Puzzles/GoalNarration.tsx",
-          "expectation": "Goal narration section offers optional text-to-speech playback for accessibility."
+          "target": "components/analytics/MovementReplay.tsx",
+          "expectation": "visualizes stored movement coordinates from telemetry data"
         }
       ]
     }

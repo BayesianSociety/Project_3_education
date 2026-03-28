@@ -1,0 +1,3 @@
+module.exports=[13896,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(77985);a.n(d("[project]/multi-agent-producer_V0/Project_3_education/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},67815,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(77985);a.n(d("[project]/multi-agent-producer_V0/Project_3_education/node_modules/next/dist/client/components/builtin/global-error.js"))},93131,a=>{"use strict";a.i(13896);var b=a.i(67815);a.n(b)}];
+
+//# sourceMappingURL=ef7bd_next_dist_client_components_builtin_global-error_dd2912c3.js.map

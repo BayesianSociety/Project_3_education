@@ -6,19 +6,8 @@
 [1;95mStage 6/10: Worker generation[0m
 [1;95mWorker launch: Backend Producer (attempt 1)[0m
 [1;95mWorker launch: Frontend Producer (attempt 1)[0m
-Traceback (most recent call last):
-  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1367, in <module>
-    asyncio.run(main())
-  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
-    return loop.run_until_complete(main)
-  File "/usr/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
-    return future.result()
-  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1342, in main
-    worker_results = await stage_worker_generation(project_brief, context_payload, plan_payload, args.max_concurrency)
-  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1142, in stage_worker_generation
-    batch_results = await asyncio.gather(
-  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1057, in run_worker_task
-    enforce_policy(before, after, policy)
-  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 221, in enforce_policy
-    raise RuntimeError(f"[{policy.name}] policy violation(s): " + "; ".join(violations))
-RuntimeError: [Frontend Producer] policy violation(s): Created outside allowlist: app/puzzles/[puzzleId]/page.tsx; Created outside allowlist: components/Analytics/MovementReplay.tsx; Created outside allowlist: components/Puzzle/PuzzleExperience.tsx; Created outside allowlist: components/Scene/GameStage.tsx; Created outside allowlist: components/Workspace/BlocklyWorkspace.tsx; Created outside allowlist: components/Workspace/ControlsPanel.tsx; Created outside allowlist: components/Workspace/ShowCodePanel.tsx; Created outside allowlist: lib/game/puzzles.ts; Created outside allowlist: lib/game/renderer/SceneCanvas.tsx; Created outside allowlist: lib/game/runtime.ts; Created outside allowlist: lib/game/types.ts; Created outside allowlist: styles/globals.css; Required output missing: components; Required output missing: lib/game; Required output missing: public/assets
+[1;95mStage 7/10: Artifact validation[0m
+[1;95mStage 8/10: Build validation[0m
+[1;95mStage 9/10: Runtime validation[0m
+[1;95mStage 10/10: Final acceptance summary[0m
+[1;95mWorkflow completed successfully[0m

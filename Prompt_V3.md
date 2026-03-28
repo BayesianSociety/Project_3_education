@@ -247,6 +247,8 @@ The plan should include at least:
 Validation expectations must not require package installation or network access.
 Do not use commands such as `npm install`, `npm ci`, `pnpm install`, `yarn install`, or `bun install` in build or runtime expectations.
 Prefer offline-safe checks that operate on repository state, and when JavaScript dependencies are not guaranteed to exist locally, prefer artifact-based validation over `npm run ...` commands.
+Do not emit directory placeholders such as `app` or `scripts` in any path field that is later consumed as a file path.
+Do not emit `npm run ...`, `pnpm ...`, `yarn ...`, `bun ...`, or `node path/to/file.ts` as build or runtime expectations unless the repository already contains the local runtime dependencies needed to execute them offline.
 
 The plan must not output vague sentences in fields that are later consumed as structured inputs.
 This is bad:
@@ -273,8 +275,12 @@ The planner must avoid:
 
 - Every `owned_path` must be a concrete relative file path.
 - Every `required_output` must be a concrete relative file path.
+- Every `shared_artifact` and every plan-level `contract` must be a concrete relative file path.
+- Path fields must not contain leading or trailing whitespace.
+- Path fields must not use `./` prefixes.
 - No prose deliverable may appear in a path field.
 - Validation rules must declare what kind of check they require.
+- Validation-rule targets must be concrete relative file paths unless the rule kind explicitly expects a shell command.
 - Planner fields consumed by the orchestrator must be narrow, typed, and repairable.
 
 ## Codex output-schema compatibility
@@ -409,6 +415,14 @@ Validators must prefer:
 - normalized contract checks
 - artifact-aware evidence collection
 
+Verification-agent findings must be machine-usable.
+Each finding must include:
+- severity
+- message
+- concrete source file paths actually inspected while producing that finding
+
+Do not return speculative findings without file-level evidence.
+
 ## Artifact coverage
 
 Validators must read the artifact types they claim to verify. Relevant sources may include:
@@ -439,6 +453,32 @@ The system must also be able to detect real route composition bugs such as dupli
 ## Documentation and QA validation
 
 Documentation and test-plan checks must be semantic, not dependent on one exact human-facing heading. Equivalent section titles must be accepted when they clearly express the same intent.
+
+## Verification repair loop
+
+Artifact validation must not be terminal on the first failed verification pass when findings can be mapped back to owned worker files.
+
+Requirements:
+- when the Verification Agent reports failed findings with concrete source files, the orchestrator must map those findings back to the owning worker or workers
+- the orchestrator must launch a bounded targeted repair loop for the impacted workers
+- worker repair prompts must include the exact validator findings and cited source files
+- after targeted repairs, the orchestrator must rerun artifact validation before proceeding
+- if findings cannot be mapped to owned files or the bounded repair loop is exhausted, only then may the orchestrator fail the run
+- the orchestrator must normalize validator evidence paths before ownership lookup by stripping line and column suffixes such as `:12`, `:12:4`, or `#L12`
+- shared brief references such as `Project_description.md` may appear as supporting evidence, but they must not prevent routing a finding when other cited files map to owned worker paths
+- if targeted worker repair passes are exhausted but unresolved findings still remain, the orchestrator must perform one bounded whole-repository artifact-repair escalation pass before failing the run
+- this escalation pass may analyze backend and frontend files together, but it must still enforce a typed output schema and a concrete editable-file allowlist
+
+The validator must remain strict, but the pipeline must support targeted recovery from validator findings instead of treating Stage 7 as immediately terminal.
+
+## Validator evidence paths
+
+When the Verification Agent returns `source_files` used for downstream repair routing:
+
+- each `source_files` entry must be a plain existing relative file path
+- do not include line numbers or fragments inside `source_files`
+- if line-level evidence is important, include it in the finding message instead
+- downstream routing logic must still defensively normalize `source_files` before ownership mapping in case a validator returns annotated paths
 
 # Framework-aware validation
 
