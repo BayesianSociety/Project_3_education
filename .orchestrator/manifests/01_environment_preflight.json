@@ -2,13 +2,17 @@
   "stage_index": 1,
   "stage_name": "Environment preflight",
   "note": "Environment preflight complete",
-  "generated_at": "2026-03-24T20:55:41.854912+00:00",
+  "generated_at": "2026-03-29T17:04:20.259411+00:00",
   "workspace_root": "/home/postnl/multi-agent-producer_V0/Project_3_education",
-  "snapshot_sha256": "3966290fea935b5de7337f484ee730eef480adb91c28e837a3882b831f2ff493",
+  "snapshot_sha256": "cd2ac157ebf6036d2f4bd4b62a92598d5dd1e63687dfe2bfdfa93eeca4540a80",
   "files": {
     "Prompt_V3_Codex_Supervisor.md": {
       "sha256": "b0a5ee19c497c9a8bda57df2aeaf75d9afd0623ef2863ad5eb34b5787f788ac1",
       "size": 13251
+    },
+    ".gitignore": {
+      "sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+      "size": 14
     },
     "Project_description.md": {
       "sha256": "d0f293941e8883eac35d0ed58c862c3f1a4ddf3b2326264bda1c7d67b1561a72",
@@ -35,32 +39,36 @@
       "size": 23597
     },
     "codex_supervisor.py": {
-      "sha256": "d120c6efcce6f346d42b676cd0c0fba4571bfeb2021a63ae8675d30a3b1c8e7d",
-      "size": 38782
+      "sha256": "200e64565a505d9a8626a8bfaa598c2998b6e1cc591d37b19ff0e435bb3c410a",
+      "size": 39004
+    },
+    "game.png": {
+      "sha256": "7dcdc2169f921b83b771fb62a206aa29f8bd2e209176e4bb2d9c9f60e1bfc2ad",
+      "size": 559055
     },
     "05.Use.md": {
-      "sha256": "1c6885185e9282d7103c6250189006e96bbef61ee3f34b6ebd11ca9bf6c6d44e",
-      "size": 258
+      "sha256": "35f336456df50fda1d7f857b123bf23e34a8e7c9c1f100f8cfbb2e7da90e48c2",
+      "size": 318
     },
     "orchestrator.py": {
-      "sha256": "38b58ffdc02ea9e1db2019ea37c49f7b11a505e6137daaccd3bba41989a1dff4",
-      "size": 76418
+      "sha256": "a82e57a813dc39dabe4a988ade34f525a1b38c084773a2db90155ea45c7fc4e7",
+      "size": 78629
     },
     ".self_heal/schemas/repair_result.json": {
       "sha256": "3dd7a0acabaff722227f04f8d5d588951b7ed02e458cb666b24e81f46e193f03",
       "size": 839
     },
     ".orchestrator/runtime_config.json": {
-      "sha256": "abb33399588766ee24daacc031ecc7170badfd860fb0dadf2db5d952e5079132",
-      "size": 532
+      "sha256": "f55ed97e8fab7c6d2d89d6dc10a34633ca34c3e2cffccf45c80782d219ff7f38",
+      "size": 558
     },
     ".orchestrator/decision_log.jsonl": {
-      "sha256": "3c32a67e6bbeccdcab9325a1546f2ceb0023070292a5582f4b7b2075d474e2ac",
+      "sha256": "0caa474f66ab56e5046204864e6240c6e5f5174f233f1c046ccfc04fecea1848",
       "size": 236
     },
     ".orchestrator/reports/environment_preflight.json": {
-      "sha256": "d241db0c9b8236c3d21df62b5e8fab30bd9af27b382b949175db0dc1dc3838b1",
-      "size": 418
+      "sha256": "e76df92d9232b27b00e38d6bbd35cac4033e2b92996afd7bba96ab26859e7d77",
+      "size": 417
     },
     "public/assets/sprites/obstacle.png": {
       "sha256": "f30145007f8fe82dbf4332fe3c773fe9ee9d384dc18e36c3af4c56fefe6d03bc",

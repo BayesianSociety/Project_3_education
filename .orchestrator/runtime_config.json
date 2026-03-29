@@ -12,5 +12,6 @@
     "worker_tasks": ".orchestrator/worker_tasks",
     "worktrees": "tmp/worktrees"
   },
-  "max_concurrency": 2
+  "max_concurrency": 2,
+  "keep_worktrees": true
 }

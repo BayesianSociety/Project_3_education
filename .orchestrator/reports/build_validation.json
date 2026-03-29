@@ -3,19 +3,19 @@
   "mode": "advisory_only",
   "results": [
     {
-      "name": "TypeScript lint",
-      "command": "npx next lint",
+      "name": "next_build",
+      "command": "./node_modules/.bin/next build",
       "returncode": 1,
-      "stdout_tail": "",
-      "stderr_tail": "npm warn Unknown user config \"always-auth\" (//lpe.jfrog.io/artifactory/api/npm/lpe-shared-npm-prd-virtual/:always-auth). This will stop working in the next major version of npm.\nInvalid project directory provided, no such directory: /home/postnl/multi-agent-producer_V0/Project_3_education/lint\n",
+      "stdout_tail": "   \u25b2 Next.js 16.0.0 (Turbopack)\n\n   Creating an optimized production build ...\n",
+      "stderr_tail": "m^\u001b[22m\u001b[39m\u001b[31m\u001b[1m^\u001b[22m\u001b[39m\u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 26 |\u001b[39m   }\n \u001b[90m 27 |\u001b[39m   \u001b[36mreturn\u001b[39m \u001b[33mPixiModule\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m }\u001b[0m\n\n\n\nImport traces:\n  Client Component Browser:\n    ./multi-agent-producer_V0/Project_3_education/components/SceneCanvas.tsx [Client Component Browser]\n    ./multi-agent-producer_V0/Project_3_education/app/page.tsx [Client Component Browser]\n    ./multi-agent-producer_V0/Project_3_education/app/page.tsx [Server Component]\n\n  Client Component SSR:\n    ./multi-agent-producer_V0/Project_3_education/components/SceneCanvas.tsx [Client Component SSR]\n    ./multi-agent-producer_V0/Project_3_education/app/page.tsx [Client Component SSR]\n    ./multi-agent-producer_V0/Project_3_education/app/page.tsx [Server Component]\n\nhttps://nextjs.org/docs/messages/module-not-found\n\n\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/components/SceneCanvas.tsx:25:24)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n",
       "status": "failed"
     },
     {
-      "name": "Production build",
-      "command": "npx next build",
+      "name": "lint_checks",
+      "command": "./node_modules/.bin/next lint",
       "returncode": 1,
-      "stdout_tail": "   \u25b2 Next.js 16.0.0 (Turbopack)\n   - Experiments (use with caution):\n     \u2713 typedRoutes\n\n   Creating an optimized production build ...\n",
-      "stderr_tail": "es/module-not-found\n\n\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/app/layout.tsx:3:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/hooks/useBlocklyWorkspace.ts:5:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/hooks/useBlocklyWorkspace.ts:4:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/lib/blockly/definitions.ts:1:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/lib/blockly/serialization.ts:1:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n    at <unknown> (./multi-agent-producer_V0/Project_3_education/lib/blockly/theme.ts:1:1)\n    at <unknown> (https://nextjs.org/docs/messages/module-not-found)\n",
+      "stdout_tail": "",
+      "stderr_tail": "Invalid project directory provided, no such directory: /home/postnl/multi-agent-producer_V0/Project_3_education/lint\n",
       "status": "failed"
     }
   ]

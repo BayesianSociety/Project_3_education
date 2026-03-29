@@ -1,0 +1,8 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/api/analytics/puzzle/[puzzleId]/route": "app/api/analytics/puzzle/[puzzleId]/route.js",
+  "/api/analytics/summary/route": "app/api/analytics/summary/route.js",
+  "/api/events/batch/route": "app/api/events/batch/route.js",
+  "/page": "app/page.js"
+}

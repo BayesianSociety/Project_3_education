@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import fnmatch
 import hashlib
 import json
@@ -24,6 +25,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import sys
 import textwrap
 from dataclasses import asdict, dataclass, field
@@ -71,6 +73,16 @@ RETRYABLE_RUNTIME_PATTERNS = (
     "json decode",
     "stream ended unexpectedly",
 )
+BASIC_DEV_SERVER_PATTERNS = (
+    "./node_modules/.bin/next dev",
+    "next dev",
+    "npm run dev",
+    "pnpm dev",
+    "yarn dev",
+    "bun dev",
+)
+DEV_SERVER_SMOKE_SECONDS = int(os.getenv("DEV_SERVER_SMOKE_SECONDS", "20"))
+DEV_SERVER_SHUTDOWN_GRACE_SECONDS = int(os.getenv("DEV_SERVER_SHUTDOWN_GRACE_SECONDS", "10"))
 BANNED_INSTALL_PATTERNS = (
     "npm install",
     "npm ci",
@@ -389,6 +401,62 @@ async def run_command(args: Sequence[str], cwd: Path = ROOT, timeout: int = 120)
         proc.kill()
         raise RuntimeError(f"Timed out running command: {' '.join(shlex.quote(part) for part in args)}")
     return proc.returncode, stdout.decode("utf-8", errors="replace"), stderr.decode("utf-8", errors="replace")
+
+
+def command_needs_dev_server_smoke(command: str) -> bool:
+    normalized = " ".join(command.strip().split()).lower()
+    return any(pattern in normalized for pattern in BASIC_DEV_SERVER_PATTERNS)
+
+
+async def _pump_stream(reader: Optional[asyncio.StreamReader], sink: List[bytes]) -> None:
+    if reader is None:
+        return
+    while True:
+        chunk = await reader.read(1024)
+        if not chunk:
+            break
+        sink.append(chunk)
+
+
+def _decode_chunks(chunks: List[bytes]) -> str:
+    if not chunks:
+        return ""
+    return b"".join(chunks).decode("utf-8", errors="replace")
+
+
+async def run_dev_server_smoke(command: str, cwd: Path = ROOT) -> Tuple[int, str, str, str]:
+    proc = await asyncio.create_subprocess_exec(
+        "bash",
+        "-lc",
+        command,
+        cwd=str(cwd),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout_chunks: List[bytes] = []
+    stderr_chunks: List[bytes] = []
+    stdout_task = asyncio.create_task(_pump_stream(proc.stdout, stdout_chunks))
+    stderr_task = asyncio.create_task(_pump_stream(proc.stderr, stderr_chunks))
+    note = ""
+    try:
+        await asyncio.wait_for(proc.wait(), timeout=DEV_SERVER_SMOKE_SECONDS)
+        rc = proc.returncode
+    except asyncio.TimeoutError:
+        note = f"dev server smoke-ran for ~{DEV_SERVER_SMOKE_SECONDS}s and was terminated"
+        with contextlib.suppress(ProcessLookupError):
+            proc.send_signal(signal.SIGINT)
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=DEV_SERVER_SHUTDOWN_GRACE_SECONDS)
+            rc = 0
+        except asyncio.TimeoutError:
+            with contextlib.suppress(ProcessLookupError):
+                proc.kill()
+            await proc.wait()
+            rc = 1
+            note += "; forced kill after shutdown timeout"
+    finally:
+        await asyncio.gather(stdout_task, stderr_task, return_exceptions=True)
+    return rc, _decode_chunks(stdout_chunks), _decode_chunks(stderr_chunks), note
 
 
 @dataclass
@@ -857,6 +925,38 @@ Project_description.md (full text):
 """
 
 
+def task_is_frontend_oriented(task: Dict[str, Any]) -> bool:
+    fields: List[str] = [task.get("role", ""), task.get("summary", "")]
+    for key in ("owned_paths", "required_outputs", "read_only_inputs", "contracts", "dependencies"):
+        value = task.get(key, [])
+        if isinstance(value, list):
+            fields.extend(str(item) for item in value)
+
+    haystack = "\n".join(fields).lower()
+    frontend_markers = (
+        "frontend",
+        "ui",
+        "ux",
+        "landing page",
+        "website",
+        "next.js",
+        "nextjs",
+        "react",
+        "webgl",
+        "webgpu",
+        "app/",
+        "pages/",
+        "components/",
+        "frontend/",
+        ".tsx",
+        ".jsx",
+        ".css",
+        ".scss",
+        ".html",
+    )
+    return any(marker in haystack for marker in frontend_markers)
+
+
 def worker_prompt(
     role: str,
     task: Dict[str, Any],
@@ -878,6 +978,15 @@ def worker_prompt(
         repair_section = f"""
 Repair focus:
 {repair_request}
+"""
+    frontend_skill_section = ""
+    if task_is_frontend_oriented(task):
+        frontend_skill_section = """
+
+Frontend skill requirement:
+- Explicitly use `frontend-skill` for this task.
+- Apply it as the governing art-direction and interface-quality rubric for any frontend, UI, or visual implementation decisions in your owned files.
+- Do not mention the skill in user-facing product copy unless the brief explicitly asks for that.
 """
     return f"""\
 You are the {role}. You are not alone in the codebase. Do not revert edits made by others, and do not touch files outside your ownership.
@@ -904,6 +1013,7 @@ Contracts:
 Validation rules:
 {validation_rules}
 {repair_section}
+{frontend_skill_section}
 
 Required final output format:
 {{
@@ -1279,7 +1389,11 @@ async def run_advisory_validation_commands(entries: Sequence[Dict[str, Any]], re
             })
             overall_status = "advisory_failed"
             continue
-        rc, stdout, stderr = await run_command(["bash", "-lc", command], cwd=ROOT, timeout=300)
+        note = ""
+        if command_needs_dev_server_smoke(command):
+            rc, stdout, stderr, note = await run_dev_server_smoke(command, cwd=ROOT)
+        else:
+            rc, stdout, stderr = await run_command(["bash", "-lc", command], cwd=ROOT, timeout=300)
         status = "passed" if rc == 0 else "failed"
         if rc != 0:
             overall_status = "advisory_failed"
@@ -1290,6 +1404,7 @@ async def run_advisory_validation_commands(entries: Sequence[Dict[str, Any]], re
             "stdout_tail": stdout[-1000:],
             "stderr_tail": stderr[-1000:],
             "status": status,
+            **({"note": note} if note else {}),
         })
     return {
         "status": overall_status,
@@ -1417,6 +1532,7 @@ async def run_worker_task(
     plan_payload: Dict[str, Any],
     task: Dict[str, Any],
     repair_request: str = "",
+    keep_worktrees: bool = False,
 ) -> WorkerResult:
     role = task["role"]
     worktree_path = WORKTREES_DIR / slugify(role)
@@ -1466,7 +1582,10 @@ async def run_worker_task(
                     "copied_paths": copied,
                     "usage": result.usage,
                 })
-                await remove_git_worktree(worktree_path)
+                if keep_worktrees:
+                    log_step(f"Preserving worktree for {role}: {worktree_path}")
+                else:
+                    await remove_git_worktree(worktree_path)
                 return WorkerResult(
                     role=role,
                     final_status=payload["final_status"],
@@ -1486,7 +1605,10 @@ async def run_worker_task(
                     "failure_class": failure_class,
                     "error": str(exc),
                 })
-                await remove_git_worktree(worktree_path)
+                if keep_worktrees:
+                    log_step(f"Preserving failed worktree for {role}: {worktree_path}")
+                else:
+                    await remove_git_worktree(worktree_path)
                 if failure_class == "retryable_infrastructure" and attempt < MAX_REPAIR_ATTEMPTS:
                     log_step(f"Retrying {role} after retryable infrastructure failure")
                     continue
@@ -1581,7 +1703,13 @@ def detect_worker_dependency_cycle(pending_tasks: Dict[str, Dict[str, Any]], dep
     return None
 
 
-async def stage_worker_generation(project_brief: str, context_payload: Dict[str, Any], plan_payload: Dict[str, Any], max_concurrency: int) -> List[WorkerResult]:
+async def stage_worker_generation(
+    project_brief: str,
+    context_payload: Dict[str, Any],
+    plan_payload: Dict[str, Any],
+    max_concurrency: int,
+    keep_worktrees: bool = False,
+) -> List[WorkerResult]:
     log_step("Stage 6/10: Worker generation")
     for task in plan_payload["worker_tasks"]:
         task_path = TASKS_DIR / f"{slugify(task['role'])}.json"
@@ -1625,7 +1753,17 @@ async def stage_worker_generation(project_brief: str, context_payload: Dict[str,
                 raise RuntimeError(f"Worker dependency deadlock: {unresolved}")
         batch = ready[:max_concurrency]
         batch_results = await asyncio.gather(
-            *(run_worker_task(semaphore, project_brief, context_payload, plan_payload, task) for task in batch)
+            *(
+                run_worker_task(
+                    semaphore,
+                    project_brief,
+                    context_payload,
+                    plan_payload,
+                    task,
+                    keep_worktrees=keep_worktrees,
+                )
+                for task in batch
+            )
         )
         for item in batch_results:
             completed_roles.add(item.role)
@@ -1707,7 +1845,7 @@ async def stage_final_acceptance_summary(
     return summary
 
 
-def write_runtime_config(project_brief_path: Path, max_concurrency: int) -> None:
+def write_runtime_config(project_brief_path: Path, max_concurrency: int, keep_worktrees: bool) -> None:
     payload = {
         "model": MODEL,
         "sandbox_mode": SANDBOX,
@@ -1723,6 +1861,7 @@ def write_runtime_config(project_brief_path: Path, max_concurrency: int) -> None
             "worktrees": str(WORKTREES_DIR.relative_to(ROOT)),
         },
         "max_concurrency": max_concurrency,
+        "keep_worktrees": keep_worktrees,
     }
     write_text(RUNTIME_CONFIG_JSON, json.dumps(payload, indent=2))
 
@@ -1801,6 +1940,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run-preflight", action="store_true", help="Run only environment preflight and exit")
     parser.add_argument("--bootstrap-plan", action="store_true", help="Use the local bootstrap plan instead of invoking Codex for planning")
     parser.add_argument("--resume-from-stage", default="", help="Resume from a stage index, exact stage name, or stage slug")
+    parser.add_argument("--keep-worktrees", action="store_true", help="Preserve worker git worktrees under tmp/worktrees for debugging")
     return parser.parse_args()
 
 
@@ -1812,7 +1952,7 @@ async def main() -> None:
     if not project_brief_path.is_absolute():
         project_brief_path = ROOT / project_brief_path
     project_brief = load_project_brief(project_brief_path)
-    write_runtime_config(project_brief_path, args.max_concurrency)
+    write_runtime_config(project_brief_path, args.max_concurrency, args.keep_worktrees)
     resume_stage_index = parse_resume_stage(args.resume_from_stage)
     if resume_stage_index > 1:
         ensure_resume_prerequisites(resume_stage_index, project_brief_path)
@@ -1872,7 +2012,13 @@ async def main() -> None:
         plan_payload = load_json_file(PLAN_JSON)
 
     if resume_stage_index <= 6:
-        worker_results = await stage_worker_generation(project_brief, context_payload, plan_payload, args.max_concurrency)
+        worker_results = await stage_worker_generation(
+            project_brief,
+            context_payload,
+            plan_payload,
+            args.max_concurrency,
+            args.keep_worktrees,
+        )
         write_manifest(6, REQUIRED_STAGE_NAMES[5], "Worker generation complete")
         write_checkpoint(6, REQUIRED_STAGE_NAMES[5], "Worker generation complete", project_brief_path)
     else:

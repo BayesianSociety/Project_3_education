@@ -5,9 +5,65 @@
 [1;95mStage 5/10: Planner repair loop if needed[0m
 [1;95mStage 6/10: Worker generation[0m
 [1;95mWorker launch: Backend Producer (attempt 1)[0m
+[1;95mPreserving worktree for Backend Producer: /home/postnl/multi-agent-producer_V0/Project_3_education/tmp/worktrees/backend_producer[0m
 [1;95mWorker launch: Frontend Producer (attempt 1)[0m
+[1;95mPreserving worktree for Frontend Producer: /home/postnl/multi-agent-producer_V0/Project_3_education/tmp/worktrees/frontend_producer[0m
 [1;95mStage 7/10: Artifact validation[0m
 [1;95mStage 8/10: Build validation[0m
 [1;95mStage 9/10: Runtime validation[0m
-[1;95mStage 10/10: Final acceptance summary[0m
-[1;95mWorkflow completed successfully[0m
+Loop <_UnixSelectorEventLoop running=False closed=True debug=False> that handles pid 5314 is closed
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/streams.py", line 501, in _wait_for_data
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/subprocess.py", line 195, in communicate
+    stdin, stdout, stderr = await tasks.gather(stdin, stdout, stderr)
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/tasks.py", line 456, in wait_for
+    return fut.result()
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 387, in run_command
+    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+  File "/usr/lib/python3.10/asyncio/tasks.py", line 458, in wait_for
+    raise exceptions.TimeoutError() from exc
+asyncio.exceptions.TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1996, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1972, in main
+    await stage_runtime_validation(plan_payload)
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1743, in stage_runtime_validation
+    report = await run_advisory_validation_commands(plan_payload["runtime_expectations"], "runtime_validation")
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 1324, in run_advisory_validation_commands
+    rc, stdout, stderr = await run_command(["bash", "-lc", command], cwd=ROOT, timeout=300)
+  File "/home/postnl/multi-agent-producer_V0/Project_3_education/orchestrator.py", line 390, in run_command
+    raise RuntimeError(f"Timed out running command: {' '.join(shlex.quote(part) for part in args)}")
+RuntimeError: Timed out running command: bash -lc './node_modules/.bin/next dev'
+Exception ignored in: <function BaseSubprocessTransport.__del__ at 0x785bfc9c6b00>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/base_subprocess.py", line 126, in __del__
+  File "/usr/lib/python3.10/asyncio/base_subprocess.py", line 104, in close
+  File "/usr/lib/python3.10/asyncio/unix_events.py", line 547, in close
+  File "/usr/lib/python3.10/asyncio/unix_events.py", line 571, in _close
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 753, in call_soon
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 515, in _check_closed
+RuntimeError: Event loop is closed

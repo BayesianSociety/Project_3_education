@@ -1,7 +1,5 @@
 {
-  "/analytics/page": "app/analytics/page.js",
-  "/api/analytics/puzzle/[puzzleId]/route": "app/api/analytics/puzzle/[puzzleId]/route.js",
   "/api/analytics/summary/route": "app/api/analytics/summary/route.js",
-  "/page": "app/page.js",
-  "/puzzles/page": "app/puzzles/page.js"
+  "/api/events/batch/route": "app/api/events/batch/route.js",
+  "/page": "app/page.js"
 }

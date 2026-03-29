@@ -1,0 +1,54 @@
+0 verbose cli /home/postnl/.nvm/versions/node/v24.11.0/bin/node /home/postnl/.nvm/versions/node/v24.11.0/bin/npm
+1 info using npm@11.6.1
+2 info using node@v24.11.0
+3 silly config load:file:/home/postnl/.nvm/versions/node/v24.11.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/postnl/multi-agent-producer_V0/Project_3_education/.npmrc
+5 silly config load:file:/home/postnl/.nvm/versions/node/v24.11.0/etc/npmrc
+6 verbose title npm install
+7 verbose argv "install"
+8 verbose logfile logs-max:10 dir:/home/postnl/multi-agent-producer_V0/Project_3_education/.npm-cache/_logs/2026-03-29T18_00_21_613Z-
+9 verbose logfile /home/postnl/multi-agent-producer_V0/Project_3_education/.npm-cache/_logs/2026-03-29T18_00_21_613Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+12 silly idealTree buildDeps
+13 silly fetch manifest better-sqlite3@^12.4.1
+14 silly packumentCache full:https://registry.npmjs.org/better-sqlite3 cache-miss
+15 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with SELF_SIGNED_CERT_IN_CHAIN
+16 http fetch GET https://registry.npmjs.org/better-sqlite3 attempt 1 failed with SELF_SIGNED_CERT_IN_CHAIN
+17 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with SELF_SIGNED_CERT_IN_CHAIN
+18 http fetch GET https://registry.npmjs.org/better-sqlite3 attempt 2 failed with SELF_SIGNED_CERT_IN_CHAIN
+19 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with SELF_SIGNED_CERT_IN_CHAIN
+20 http fetch GET https://registry.npmjs.org/better-sqlite3 attempt 3 failed with SELF_SIGNED_CERT_IN_CHAIN
+21 silly fetch manifest @types/react@^18.3.12
+22 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+23 http fetch GET https://registry.npmjs.org/@types%2freact attempt 1 failed with SELF_SIGNED_CERT_IN_CHAIN
+24 http fetch GET https://registry.npmjs.org/@types%2freact attempt 2 failed with SELF_SIGNED_CERT_IN_CHAIN
+25 http fetch GET https://registry.npmjs.org/@types%2freact attempt 3 failed with SELF_SIGNED_CERT_IN_CHAIN
+26 silly fetch manifest @types/react-dom@^18.3.1
+27 silly packumentCache full:https://registry.npmjs.org/@types%2freact-dom cache-miss
+28 http fetch GET https://registry.npmjs.org/@types%2freact-dom attempt 1 failed with SELF_SIGNED_CERT_IN_CHAIN
+29 http fetch GET https://registry.npmjs.org/@types%2freact-dom attempt 2 failed with SELF_SIGNED_CERT_IN_CHAIN
+30 http fetch GET https://registry.npmjs.org/@types%2freact-dom attempt 3 failed with SELF_SIGNED_CERT_IN_CHAIN
+31 silly placeDep ROOT @types/react@ REPLACE for: block-coding-puzzles@0.1.0 want: ^18.3.12
+32 silly placeDep ROOT @types/react-dom@ OK for: block-coding-puzzles@0.1.0 want: ^18.3.1
+33 silly placeDep ROOT better-sqlite3@ REPLACE for: block-coding-puzzles@0.1.0 want: ^12.4.1
+34 verbose type system
+35 verbose stack FetchError: request to https://registry.npmjs.org/@types%2freact failed, reason: self-signed certificate in certificate chain
+35 verbose stack     at ClientRequest.<anonymous> (/home/postnl/.nvm/versions/node/v24.11.0/lib/node_modules/npm/node_modules/minipass-fetch/lib/index.js:130:14)
+35 verbose stack     at ClientRequest.emit (node:events:508:28)
+35 verbose stack     at emitErrorEvent (node:_http_client:107:11)
+35 verbose stack     at _destroy (node:_http_client:954:9)
+35 verbose stack     at onSocketNT (node:_http_client:974:5)
+35 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+36 error code SELF_SIGNED_CERT_IN_CHAIN
+37 error errno SELF_SIGNED_CERT_IN_CHAIN
+38 error request to https://registry.npmjs.org/@types%2freact failed, reason: self-signed certificate in certificate chain
+39 silly unfinished npm timer reify 1774807221754
+40 silly unfinished npm timer reify:loadTrees 1774807221754
+41 verbose cwd /home/postnl/multi-agent-producer_V0/Project_3_education
+42 verbose os Linux 6.6.87.2-microsoft-standard-WSL2
+43 verbose node v24.11.0
+44 verbose npm  v11.6.1
+45 verbose exit 1
+46 verbose code 1
+47 error A complete log of this run can be found in: /home/postnl/multi-agent-producer_V0/Project_3_education/.npm-cache/_logs/2026-03-29T18_00_21_613Z-debug-0.log

@@ -1,37 +1,30 @@
 {
   "role": "Backend Producer",
-  "summary": "Stand up the Next.js workspace, SQLite schema, puzzle data source, telemetry ingestion, analytics APIs, and offline smoke scripts.",
+  "summary": "Own Next.js project scaffolding, shared config, puzzle data model, better-sqlite3 client, schema/init scripts, telemetry ingestion endpoints, analytics read APIs, and DB verification tooling.",
   "owned_paths": [
     "package.json",
-    "package-lock.json",
     "tsconfig.json",
     "next.config.mjs",
-    ".eslintrc.cjs",
-    "lib/db/sqlite.ts",
-    "lib/db/schema.ts",
-    "lib/db/migrations.ts",
-    "lib/telemetry/ingest.ts",
-    "lib/telemetry/analytics.ts",
-    "lib/telemetry/types.ts",
-    "lib/puzzles/data.ts",
-    "types/telemetry.ts",
     "app/api/session/start/route.ts",
     "app/api/session/end/route.ts",
     "app/api/events/batch/route.ts",
-    "app/api/analytics/summary/route.ts",
-    "app/api/analytics/puzzle/[puzzleId]/route.ts",
-    "app/api/analytics/replay/[attemptId]/route.ts",
-    "scripts/migrate.ts",
-    "scripts/seed_demo_data.ts",
-    "scripts/telemetry_smoke.ts"
+    "app/api/analytics/overview/route.ts",
+    "app/api/analytics/puzzle/[id]/route.ts",
+    "app/api/analytics/attempt/[id]/route.ts",
+    "lib/db/client.ts",
+    "lib/db/schema.ts",
+    "lib/db/migrations.ts",
+    "lib/telemetry/ingest.ts",
+    "lib/telemetry/types.ts",
+    "lib/puzzles/definitions.ts",
+    "scripts/check_db.ts"
   ],
   "required_outputs": [
     "package.json",
-    "lib/db/sqlite.ts",
-    "lib/puzzles/data.ts",
+    "lib/db/schema.ts",
     "app/api/events/batch/route.ts",
-    "app/api/analytics/replay/[attemptId]/route.ts",
-    "scripts/telemetry_smoke.ts"
+    "lib/puzzles/definitions.ts",
+    "scripts/check_db.ts"
   ],
   "read_only_inputs": [
     "Project_description.md",
@@ -41,79 +34,51 @@
     "public/assets/sprites/place.png",
     "public/assets/sprites/obstacle.png",
     "public/assets/sprites/food.png",
-    "app/layout.tsx",
-    "app/page.tsx",
-    "app/puzzles/page.tsx",
-    "app/puzzles/[puzzleId]/page.tsx",
-    "app/analytics/page.tsx",
-    "components/blockly/Workspace.tsx",
-    "components/game/SceneCanvas.tsx",
-    "components/analytics/Dashboard.tsx",
-    "styles/globals.css",
-    "lib/game/runtime.ts"
+    "plans/implementation_plan.md",
+    "contracts/backend_contract.md"
   ],
   "forbidden_paths": [
     "app/layout.tsx",
     "app/page.tsx",
     "app/puzzles/page.tsx",
-    "app/puzzles/[puzzleId]/page.tsx",
+    "app/puzzles/[id]/page.tsx",
     "app/analytics/page.tsx",
-    "components/blockly/Workspace.tsx",
-    "components/blockly/Palette.tsx",
-    "components/game/SceneCanvas.tsx",
-    "components/game/RunControls.tsx",
-    "components/game/HintPanel.tsx",
-    "components/game/ShowCodePanel.tsx",
-    "components/game/TextToSpeechToggle.tsx",
-    "components/analytics/Dashboard.tsx",
-    "components/analytics/EventStream.tsx",
-    "components/analytics/MovementReplay.tsx",
-    "hooks/useBlocklyWorkspace.ts",
-    "hooks/useTelemetryBuffer.ts",
-    "lib/game/runtime.ts",
-    "lib/game/world.ts",
-    "lib/webgl/renderer.ts",
-    "styles/globals.css",
-    "styles/theme.css"
+    "app/analytics/[id]/page.tsx",
+    "components/GameShell.tsx",
+    "components/BlockWorkspace.tsx",
+    "components/SceneCanvas.tsx",
+    "components/ControlsPanel.tsx",
+    "components/FailureModal.tsx",
+    "components/AnalyticsDashboard.tsx",
+    "hooks/usePuzzleRunner.ts",
+    "hooks/useTelemetry.ts",
+    "styles/theme.css",
+    "lib/game/engine.ts",
+    "lib/game/simulator.ts",
+    "lib/game/replay.ts"
   ],
-  "dependencies": [
-    "Architect"
-  ],
+  "dependencies": [],
   "contracts": [
-    "Create better-sqlite3 helpers that auto-initialize all telemetry and puzzle tables on first access, including movement logging.",
-    "Implement the session, event batch, and analytics/replay Next.js API routes with validation, failure reason tagging, and code snapshot handling.",
-    "Ship migration/seed and telemetry smoke scripts so build/runtime expectations can verify DB bootstrap and event persistence offline."
+    "contracts/backend_contract.md"
   ],
   "validation_rules": [
     {
-      "name": "Manifest declares Next 16",
+      "name": "schema_tables_declared",
       "kind": "contains_text",
-      "target": "package.json",
-      "expectation": "includes \"next\": \"16\" and blockly dependency entries"
+      "target": "lib/db/schema.ts",
+      "expectation": "CREATE TABLE IF NOT EXISTS attempts"
     },
     {
-      "name": "DB helper uses better-sqlite3",
+      "name": "telemetry_route_exports_post",
       "kind": "contains_text",
-      "target": "lib/db/sqlite.ts",
-      "expectation": "imports better-sqlite3 and configures pragmas"
-    },
-    {
-      "name": "Event API present",
-      "kind": "file_exists",
       "target": "app/api/events/batch/route.ts",
-      "expectation": "batch ingestion endpoint implemented"
+      "expectation": "export async function POST"
     },
     {
-      "name": "Replay API present",
-      "kind": "file_exists",
-      "target": "app/api/analytics/replay/[attemptId]/route.ts",
-      "expectation": "movement replay endpoint implemented"
-    },
-    {
-      "name": "Telemetry smoke references endpoints",
+      "name": "puzzle_data_export",
       "kind": "contains_text",
-      "target": "scripts/telemetry_smoke.ts",
-      "expectation": "hits /api/session/start and /api/events/batch for offline verification"
+      "target": "lib/puzzles/definitions.ts",
+      "expectation": "export const puzzles"
     }
   ]
 }

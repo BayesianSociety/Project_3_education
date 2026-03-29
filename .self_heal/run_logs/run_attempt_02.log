@@ -1,0 +1,12 @@
+[1;95mResuming from Stage 7/10: Artifact validation[0m
+[1;95mResume skip: Stage 1/10: Environment preflight[0m
+[1;95mResume skip: Stage 2/10: Context analysis[0m
+[1;95mResume skip: Stage 3/10: Planner generation[0m
+[1;95mResume skip: Stage 4/10: Planner schema validation[0m
+[1;95mResume skip: Stage 5/10: Planner repair loop if needed[0m
+[1;95mResume skip: Stage 6/10: Worker generation[0m
+[1;95mStage 7/10: Artifact validation[0m
+[1;95mStage 8/10: Build validation[0m
+[1;95mStage 9/10: Runtime validation[0m
+[1;95mStage 10/10: Final acceptance summary[0m
+[1;95mWorkflow completed successfully[0m

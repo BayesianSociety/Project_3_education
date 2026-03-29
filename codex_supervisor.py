@@ -165,6 +165,8 @@ def build_orchestrator_command(args: argparse.Namespace) -> List[str]:
         command.append("--bootstrap-plan")
     if args.dry_run_preflight:
         command.append("--dry-run-preflight")
+    if args.keep_worktrees:
+        command.append("--keep-worktrees")
     return command
 
 
@@ -789,6 +791,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-concurrency", type=int, default=None, help="Forwarded to orchestrator.py")
     parser.add_argument("--bootstrap-plan", action="store_true", help="Forwarded to orchestrator.py")
     parser.add_argument("--dry-run-preflight", action="store_true", help="Forwarded to orchestrator.py")
+    parser.add_argument("--keep-worktrees", action="store_true", help="Forwarded to orchestrator.py to preserve worker worktrees under tmp/worktrees")
     parser.add_argument("--max-heal-attempts", type=int, default=3, help="Maximum Codex repair attempts after a failed orchestrator run")
     parser.add_argument("--run-timeout", type=int, default=RUN_TIMEOUT_SECONDS, help="Timeout in seconds for each orchestrator run")
     parser.add_argument("--repair-timeout", type=int, default=CODEX_TIMEOUT_SECONDS, help="Timeout in seconds for each Codex repair call")

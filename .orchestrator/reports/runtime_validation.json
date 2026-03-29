@@ -3,19 +3,19 @@
   "mode": "advisory_only",
   "results": [
     {
-      "name": "SQLite migration check",
-      "command": "NODE_ENV=test npx tsx scripts/migrate.ts --check",
+      "name": "dev_server",
+      "command": "./node_modules/.bin/next dev",
       "returncode": 1,
-      "stdout_tail": "",
-      "stderr_tail": "ION 115. This version of Node.js requires\nNODE_MODULE_VERSION 137. Please try re-compiling or re-installing\nthe module (for instance, using `npm rebuild` or `npm install`).\n    at Object..node (node:internal/modules/cjs/loader:1920:18)\n    at Module.load (node:internal/modules/cjs/loader:1480:32)\n    at Module._load (node:internal/modules/cjs/loader:1299:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)\n    at Module.require (node:internal/modules/cjs/loader:1503:12)\n    at require (node:internal/modules/helpers:152:16)\n    at bindings (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/bindings/bindings.js:112:48)\n    at new Database (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/better-sqlite3/lib/database.js:48:64)\n    at getDb (/home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/sqlite.ts:28:14) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n\nNode.js v24.11.0\n",
+      "stdout_tail": "   \u25b2 Next.js 16.0.0 (Turbopack)\n   - Local:        http://localhost:3001\n   - Network:      http://10.255.255.254:3001\n\n \u2713 Starting...\n   Suggestion: If you intended to restart next dev, terminate the other process, and then try again.\n\u001b[?25h\n",
+      "stderr_tail": " \u26a0 Port 3000 is in use by an unknown process, using available port 3001 instead.\n[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`\n \u2a2f Unable to acquire lock at /home/postnl/multi-agent-producer_V0/Project_3_education/.next/dev/lock, is another instance of next dev running?\n",
       "status": "failed"
     },
     {
-      "name": "Telemetry smoke",
-      "command": "NODE_ENV=test npx tsx scripts/telemetry_smoke.ts",
+      "name": "db_check",
+      "command": "node scripts/check_db.ts",
       "returncode": 1,
-      "stdout_tail": "POST /api/session/start\n",
-      "stderr_tail": "g\nNODE_MODULE_VERSION 115. This version of Node.js requires\nNODE_MODULE_VERSION 137. Please try re-compiling or re-installing\nthe module (for instance, using `npm rebuild` or `npm install`).\n    at Object..node (node:internal/modules/cjs/loader:1920:18)\n    at Module.load (node:internal/modules/cjs/loader:1480:32)\n    at Module._load (node:internal/modules/cjs/loader:1299:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)\n    at Module.require (node:internal/modules/cjs/loader:1503:12)\n    at require (node:internal/modules/helpers:152:16)\n    at bindings (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/bindings/bindings.js:112:48)\n    at new Database (/home/postnl/multi-agent-producer_V0/Project_3_education/node_modules/better-sqlite3/lib/database.js:48:64)\n    at getDb (/home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/sqlite.ts:28:14) {\n  code: 'ERR_DLOPEN_FAILED'\n}\n",
+      "stdout_tail": "",
+      "stderr_tail": "node:internal/modules/esm/resolve:274\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/schema' imported from /home/postnl/multi-agent-producer_V0/Project_3_education/scripts/check_db.ts\n    at finalizeResolution (node:internal/modules/esm/resolve:274:11)\n    at moduleResolve (node:internal/modules/esm/resolve:864:10)\n    at defaultResolve (node:internal/modules/esm/resolve:990:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:757:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:734:38)\n    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:317:38)\n    at #link (node:internal/modules/esm/module_job:208:49) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///home/postnl/multi-agent-producer_V0/Project_3_education/lib/db/schema'\n}\n\nNode.js v24.11.0\n",
       "status": "failed"
     }
   ]

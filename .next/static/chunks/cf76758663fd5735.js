@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,40115,o=>{"use strict";o.i(98163),o.i(86100);let t=Error("Cannot find module 'blockly/core'");throw t.code="MODULE_NOT_FOUND",t}]);

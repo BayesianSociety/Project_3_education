@@ -1,61 +1,68 @@
 {
   "project_brief_path": "Project_description.md",
-  "domain": "Browser-based educational block-coding puzzle game with telemetry-backed analytics",
+  "domain": "Browser-based educational block-coding puzzle game",
   "constraints": [
-    "Frontend and backend implemented in Next.js 16.x with TypeScript.",
-    "Node v24.11.0 and npm 11.6.1 compatible dependencies only.",
-    "Persistence via SQLite using better-sqlite3; DB auto-creates on first run.",
-    "Block editor anchored by `On Start` root with left command library (movement, actions, control/loops, logic/conditionals, sensing) and right active code area; disconnected block warning required.",
-    "Run controls (`Play`, `Reset`, speed toggle) must be highly visible with no dark colors; workspace minimizes during execution.",
-    "Failure feedback must show `Oops!` plus hint covering reasons (target not reached, wrong item, wrong order, obstacle collision, missing condition).",
-    "Workspace assets use provided sprites/backgrounds/layout; align puzzle scenes with `design/layout_refs/layout.png` guidance.",
-    "Rendering must be polished cartoon WebGL-based 2D with shades of pink/violet, high contrast, clear actors/items/goals, and cohesive UI styling.",
-    "Block editor must be drag-and-drop (custom or heavily styled Blockly).",
-    "Telemetry must capture all gameplay/UI events including every movement and block execution step via HTTP APIs to backend."
+    "Frontend and backend built in a single Next.js 16.x TypeScript codebase compatible with Node v24.11.0/npm 11.6.1",
+    "SQLite persistence via better-sqlite3 with automatic DB creation on first run",
+    "Exactly 3 playable puzzles with data-driven definitions and lock/unlock progression",
+    "Block workspace must have left library/right code area with fixed `On Start` root, warning for disconnected blocks, categories for movement/actions/control/logic/sensing",
+    "Run controls include prominent Play/Reset/speed toggle; workspace minimizes during execution",
+    "Failure feedback must display `Oops!` plus hint for specific failure reasons (target not reached, wrong item, wrong order, obstacle collision, missing condition)",
+    "Scene assets must use provided PNGs placed per layout reference (character, place tiles, obstacle, goal) with WebGL-based polished cartoon visuals in pink/violet palette",
+    "Drag-and-drop block editor (custom or Blockly) with substantial custom theming; `Show Code` toggle for textual view",
+    "Telemetry records all gameplay/UI events including movement steps and block execution, sent via HTTP to backend",
+    "Analytics UI must read SQLite data, provide dashboard, puzzle detail, attempt history, event stream, and movement replay"
   ],
   "success_criteria": [
-    "Exactly 3 progression-linked puzzles covering sequencing, loops, and conditionals.",
-    "`Play` executes connected blocks, animates scene, and uses stored puzzle data; `Reset` restores state.",
-    "Incorrect solutions trigger `Oops!` plus contextual hint.",
-    "SQLite stores `users`, `sessions`, `puzzles`, `attempts`, `events`, `movements`, `puzzle_progress` with telemetry rows for runs and movement steps.",
-    "Analytics dashboard reads SQLite data, shows aggregates, puzzle detail, event streams, and can replay movement paths.",
-    "Telem APIs expose `POST /api/session/start`, `POST /api/session/end`, `POST /api/events/batch`, `GET /api/analytics/*`.",
-    "Show Code toggle renders read-only text version of current program.",
-    "Accessibility: keyboard navigation for main controls, adequate contrast, no color-only signals, optional text-to-speech for goal text."
+    "Three puzzles teaching sequencing, loops, conditionals with progressive difficulty",
+    "Workspace layout and controls per spec, including `On Start` root and speed toggle",
+    "Running programs animates scene; incorrect runs show `Oops!` + hint",
+    "Telemetry writes `attempts`,`events`,`movements` rows for completed runs with movement",
+    "SQLite DB auto-initializes and stores required tables",
+    "Analytics pages can replay runs using stored movement data",
+    "Game assets arranged per provided layout reference with original characters and polished styling"
   ],
   "expected_outputs": [
-    "Complete Next.js app (frontend gameplay UI, backend APIs).",
-    "Puzzle data definitions enabling data-driven scenes (id, title, story, goal, scene id, grid, entities, blocks, constraints, success criteria, hints).",
-    "SQLite schema/init logic for telemetry tables.",
-    "Telemetry ingestion and analytics/replay pages.",
-    "Game assets arranged per provided layout reference and reusable scene composition."
+    "Next.js 16 TypeScript application source covering frontend UI, backend API routes, and shared logic",
+    "Puzzle data definitions enabling future additions without core code changes",
+    "SQLite schema/init logic creating users/sessions/puzzles/attempts/events/movements/puzzle_progress tables",
+    "Telemetry ingestion APIs (`POST /api/session/start`, `/end`, `/api/events/batch`) and analytics `GET /api/analytics/*` endpoints",
+    "Game scenes using provided assets with puzzle progression, execution engine, failure feedback, and block workspace",
+    "Analytics dashboard and replay tooling consuming stored telemetry"
   ],
   "stack_requirements": [
-    "Next.js 16.x with TypeScript for both UI and server routes.",
-    "Node v24.11.0 runtime, npm 11.6.1 toolchain.",
-    "better-sqlite3 for SQLite access.",
-    "Drag-and-drop block system (custom or styled Blockly) integrated into Next.js frontend.",
-    "WebGL-capable 2D rendering for polished animation."
+    "Node v24.11.0, npm 11.6.1 baseline",
+    "Next.js 16.x with TypeScript for both frontend and backend features",
+    "better-sqlite3 for SQLite access",
+    "WebGL-based 2D rendering layer supporting smooth sprite animation",
+    "Drag-and-drop block editor (Blockly or custom) with custom styling",
+    "Optional text-to-speech for goal text; accessibility-friendly controls"
   ],
   "validation_expectations": [
-    "Run/build checks for Next.js project.",
-    "Verify automatic SQLite initialization on first launch.",
-    "Test telemetry flow: session start/end, event batching, attempts, movement logging, code snapshots.",
-    "Confirm analytics endpoints/pages can read stored data and replay runs.",
-    "Exercise puzzles to ensure progression, failure feedback, and `Oops!` hints operate.",
-    "Ensure accessibility features (keyboard controls, contrast, text-to-speech) work."
+    "Build/start scripts succeed for Next.js app",
+    "Database initialization runs automatically and creates required tables",
+    "Manual or automated checks confirm telemetry rows written for runs and movement steps",
+    "Runtime verification that analytics endpoints read stored data and replay movement paths",
+    "Functional testing ensuring three puzzles playable with success/failure handling and progression",
+    "UI verification for block workspace layout, run controls, and failure messaging"
   ],
   "repo_constraints": [
-    "Use local assets in `public/assets/...` and layout reference in `design/layout_refs/layout.png`.",
-    "Front/back code plus data must live within repository; no external services or proprietary brands.",
-    "Art/style must remain original yet aligned with provided assets/layout."
+    "Use assets from `public/assets/backgrounds/` and `public/assets/sprites/`; follow `design/layout_refs/layout.png` for initial scene composition",
+    "Treat provided layout reference as canonical for asset placement; extrapolate layout logic to later levels",
+    "No proprietary third-party characters or branding; maintain original visual identity",
+    "Maintain beginner-friendly, high-contrast pink/violet cartoon style across game and analytics views"
   ],
   "missing_information": [
-    "Exact puzzle narratives, goals, and block configurations beyond provided layout guidance.",
-    "Specific analytics metrics/visualization layouts beyond aggregates/detail/event stream/replay."
+    "Exact tile/grid sizing and coordinates for puzzles beyond guidance from layout reference",
+    "Specific narrative/story text, goal descriptions, and hints for each puzzle",
+    "Precise animation timing, speed toggle values, and loop safety cap thresholds",
+    "Detailed telemetry payload schemas and buffering strategy",
+    "Exact analytics dashboard layout and metrics beyond general requirements"
   ],
   "assumptions": [
-    "Later levels extrapolate layout reference while maintaining asset ordering and spacing logic.",
-    "Placeholder assets maintain sizing/anchors if replacements arrive later."
+    "Future puzzles will reuse the defined data format for extensibility",
+    "Layout reference provides sufficient guidance to infer positions for all scenes; remaining levels mimic spacing logic",
+    "Goal text for text-to-speech can be derived from puzzle definitions",
+    "WebGL rendering can be implemented via a compatible library (e.g., PixiJS) within Next.js without violating constraints"
   ]
 }

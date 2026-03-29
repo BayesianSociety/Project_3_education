@@ -1,16 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getPuzzleAnalytics } from '@/lib/telemetry/analytics';
+import { NextResponse } from 'next/server';
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ puzzleId: string }> }) {
+import { readAnalyticsSnapshot } from '../../../../../lib/db/analytics';
+import { getDb } from '../../../../../lib/db/connection';
+
+export async function GET(_: Request, context: { params: Promise<{ puzzleId: string }> }) {
   try {
     const { puzzleId } = await context.params;
-    const detail = getPuzzleAnalytics(puzzleId);
-    return NextResponse.json({ ok: true, detail });
+    const snapshot = readAnalyticsSnapshot(getDb());
+    return NextResponse.json({
+      puzzleId,
+      attempts: snapshot.attempts.filter((attempt) => attempt.puzzleId === puzzleId),
+      events: snapshot.events.filter((event) => event.puzzleId === puzzleId),
+      movements: snapshot.movements[puzzleId] ?? [],
+    });
   } catch (error) {
-    console.error('puzzle analytics failed', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    const normalized = message.toLowerCase();
-    const status = normalized.includes('not found') ? 404 : 500;
-    return NextResponse.json({ ok: false, error: message }, { status });
+    return NextResponse.json(
+      { error: 'Failed to read puzzle analytics', details: error instanceof Error ? error.message : error },
+      { status: 500 }
+    );
   }
 }
